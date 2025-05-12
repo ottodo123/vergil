@@ -288,6 +288,57 @@ header {
     font-weight: bold;
 }
 
+.header-nav {
+    margin-top: 10px;
+margin-left:20vw;
+
+}
+
+.header-nav a {
+    color: #ddd;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.header-nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* About 페이지 스타일 */
+#about-page {
+    background-color: white;
+    border-radius: 4px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    line-height: 1.6;
+}
+
+#about-page h2 {
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+#about-page h3 {
+    color: #555;
+    margin: 1.5rem 0 0.8rem;
+}
+
+#about-page p {
+    margin-bottom: 1rem;
+}
+
+#about-page ul {
+    margin-left: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.about-content {
+    max-width: 800px;
+}
+
 @media (max-width: 768px) {
     .search-container {
         flex-direction: column;

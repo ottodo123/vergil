@@ -17,10 +17,11 @@ const saveListContents = document.getElementById('save-list-contents');
 const newListNameInput = document.getElementById('new-list-name');
 const createListBtn = document.getElementById('create-list-btn');
 const mainTitle = document.getElementById('main-title');
+const aboutLink = document.getElementById('about-link');
+const aboutPage = document.getElementById('about-page');
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
-    // 기존 초기화 코드
     loadCSVData();
     loadSavedLists();
 
@@ -31,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (page === 'saved-lists') {
         showSavedListsPage(list);
+    } else if (page === 'about') {
+        showAboutPage();
     } else {
         showMainPage();
     }
@@ -291,11 +294,25 @@ function performSearch() {
     displayVocabularyItems(filteredVocabulary);
 }
 
-// 메인 타이틀 클릭 이벤트
+// About 링크 클릭 이벤트
+aboutLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    showAboutPage();
+    updateURL({ page: 'about' });
+});
+
+// 메인 타이틀 클릭 이벤트 (기존 코드 수정)
 mainTitle.addEventListener('click', function() {
     showMainPage();
     updateURL({ page: null, list: null, q: null });
 });
+
+// About 페이지 표시 함수
+function showAboutPage() {
+    mainPage.style.display = 'none';
+    savedListsPage.style.display = 'none';
+    aboutPage.style.display = 'block';
+}
 
 // 저장 리스트 버튼 클릭 이벤트 (팝업이 아닌 페이지 전환)
 savedListsBtn.addEventListener('click', function() {
@@ -308,12 +325,13 @@ savedListsBtn.addEventListener('click', function() {
 function showMainPage() {
     mainPage.style.display = 'block';
     savedListsPage.style.display = 'none';
+    aboutPage.style.display = 'none';
 }
-
 // 저장 리스트 페이지 표시
 function showSavedListsPage(activeList = null) {
     mainPage.style.display = 'none';
     savedListsPage.style.display = 'block';
+    aboutPage.style.display = 'none';
     updateSaveListTabs(activeList);
 }
 
@@ -740,6 +758,8 @@ window.addEventListener('popstate', function() {
     
     if (page === 'saved-lists') {
         showSavedListsPage(list);
+    } else if (page === 'about') {
+        showAboutPage();
     } else {
         showMainPage();
         if (searchQuery) {
