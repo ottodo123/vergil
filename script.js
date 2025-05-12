@@ -23,24 +23,25 @@ const mainTitle = document.getElementById('main-title');
 document.addEventListener('DOMContentLoaded', () => {
     loadCSVData();
     loadSavedLists();
+
     // URL 파라미터에 따라 페이지 표시
     const urlParams = new URLSearchParams(window.location.search);
     const page = urlParams.get('page');
     const list = urlParams.get('list');
-
+    
     if (page === 'saved-lists') {
         showSavedListsPage(list);
     } else {
         showMainPage();
     }
-
+    
     // 검색어가 URL에 있는 경우
     const searchQuery = urlParams.get('q');
     if (searchQuery) {
         searchInput.value = searchQuery;
         performSearch();
     }
-    });
+});
 
 // Load CSV data
 async function loadCSVData() {
@@ -346,23 +347,6 @@ function displayVocabularyItems(items) {
         }
     });
 }
-
-// Show saved lists modal
-savedListsBtn.addEventListener('click', () => {
-    updateSaveListTabs();
-    savedListsModal.style.display = 'block';
-});
-
-// Close modal
-closeModal.addEventListener('click', () => {
-    savedListsModal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === savedListsModal) {
-        savedListsModal.style.display = 'none';
-    }
-});
 
 // Create new save list
 createListBtn.addEventListener('click', () => {
