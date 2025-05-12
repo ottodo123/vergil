@@ -25,15 +25,18 @@
                 <!-- Google Sign-In Integration -->
                 <div id="g_id_onload"
                      data-client_id="490034991238-p0cp8dchjdl14pk0su5gh79eruipkpdk.apps.googleusercontent.com"
-                     data-callback="handleCredentialResponse"
-                     data-auto_prompt="false">
+                     data-context="signin"
+                    data-ux_mode="popup"
+                    data-callback="handleCredentialResponse"
+                    data-auto_prompt="false">
                 </div>
                 <div class="g_id_signin"
-                     data-type="standard"
-                     data-shape="rectangular"
-                     data-theme="outline"
-                     data-text="sign_in_with"
-                     data-size="large">
+                    data-type="standard"
+                    data-shape="rectangular"
+                    data-theme="outline"
+                    data-text="sign_in_with"
+                    data-size="large"
+                    data-logo_alignment="left">
                 </div>
                 <button class="saved-lists-btn" id="saved-lists-btn">Saved Lists</button>
             </div>
@@ -67,12 +70,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <!-- Main script -->
     <script src="script.js"></script>
-    <script>
-      function handleCredentialResponse(response) {
-        const token = response.credential;
-        console.log("ID Token:", token);
-        // You can decode the token using jwt-decode or send it to your backend
-      }
-    </script>
 </body>
 </html>

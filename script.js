@@ -68,23 +68,38 @@ function initGoogleSignIn() {
     }
 }
 window.handleCredentialResponse = function(response) {
-    const token = response.credential;
-    console.log("ID Token:", token);
+    console.log("Google Sign-In 응답:", response);
     
-    // 토큰을 로컬 스토리지에 저장
-    localStorage.setItem('googleToken', token);
-    
-    // 토큰에서 사용자 정보 추출
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const userName = payload.name;
-    const userEmail = payload.email;
-    
-    // 사용자 정보 저장
-    localStorage.setItem('userName', userName);
-    localStorage.setItem('userEmail', userEmail);
-    
-    // 페이지 새로고침 - 중요!
-    window.location.reload();
+    if (response && response.credential) {
+        const token = response.credential;
+        console.log("ID Token:", token);
+        
+        try {
+            // 토큰을 로컬 스토리지에 저장
+            localStorage.setItem('googleToken', token);
+            
+            // 토큰에서 사용자 정보 추출
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            console.log("사용자 정보:", payload);
+            
+            const userName = payload.name;
+            const userEmail = payload.email;
+            
+            // 사용자 정보 저장
+            localStorage.setItem('userName', userName);
+            localStorage.setItem('userEmail', userEmail);
+            
+            // 로그인 상태 UI 업데이트
+            updateLoginUI(userName);
+            
+            // 선택적: 페이지 새로고침 대신 즉시 UI 업데이트
+            // window.location.reload();
+        } catch (error) {
+            console.error("토큰 처리 오류:", error);
+        }
+    } else {
+        console.error("응답에 credential이 없습니다:", response);
+    }
 };
 
 // 로그인 UI 업데이트 함수
