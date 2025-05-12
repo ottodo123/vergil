@@ -4,7 +4,7 @@ let saveLists = {
     "Default List": []
 };
 let currentListName = "Default List";
-
+let googleAuth = null;
 // DOM elements
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
@@ -42,25 +42,197 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Google Sign-In 초기화 함수
+function initGoogleSignIn() {
+    // Google 클라이언트 ID 설정 (실제 ID로 변경 필요)
+    const CLIENT_ID = '당신의_구글_클라이언트_ID';
+    
+    if (typeof google !== 'undefined' && google.accounts) {
+        google.accounts.id.initialize({
+            client_id: CLIENT_ID,
+            callback: handleCredentialResponse,
+            auto_select: false
+        });
+        
+        // 기존 로그인 버튼의 이벤트 리스너를 변경
+        if (signInBtn) {
+            // 기존 이벤트 리스너 제거
+            const newSignInBtn = signInBtn.cloneNode(true);
+            signInBtn.parentNode.replaceChild(newSignInBtn, signInBtn);
+            
+            // 새 이벤트 리스너 추가
+            newSignInBtn.addEventListener('click', () => {
+                google.accounts.id.prompt();
+            });
+        }
+    }
+}
 
 // Google Sign-In handler
 window.handleCredentialResponse = function(response) {
     const token = response.credential;
     console.log("ID Token:", token);
-    // You can decode and use the token here to identify the user
-
-    // Save the token in local storage
+    
+    // 토큰을 로컬 스토리지에 저장
     localStorage.setItem('googleToken', token);
+    
+    // 토큰에서 사용자 정보 추출
     const payload = JSON.parse(atob(token.split('.')[1]));
     const userName = payload.name;
     const userEmail = payload.email;
     
-    // Update UI to show logged-in state
-    updateLoginState(true, userName);
+    // 사용자 정보 저장
+    localStorage.setItem('userName', userName);
+    localStorage.setItem('userEmail', userEmail);
     
-    // Refresh the page to reflect logged-in state
-    window.location.reload();
+    // 로그인 상태 UI 업데이트
+    updateLoginUI(userName);
 };
+
+// 로그인 UI 업데이트 함수
+function updateLoginUI(userName) {
+    if (signInBtn) {
+        // 로그인 상태로 버튼 변경
+        signInBtn.textContent = `${userName}님`;
+        signInBtn.classList.add('logged-in');
+        
+        // 로그아웃 버튼 추가
+        addLogoutButton();
+    }
+}
+// 로그아웃 버튼 추가 함수
+function addLogoutButton() {
+    // 이미 로그아웃 버튼이 있는지 확인
+    if (!document.getElementById('logout-btn')) {
+        const logoutBtn = document.createElement('button');
+        logoutBtn.id = 'logout-btn';
+        logoutBtn.className = 'logout-btn';
+        logoutBtn.textContent = '로그아웃';
+        logoutBtn.addEventListener('click', handleLogout);
+        
+        // 로그인 버튼 옆에 로그아웃 버튼 추가
+        if (signInBtn && signInBtn.parentNode) {
+            signInBtn.parentNode.insertBefore(logoutBtn, signInBtn.nextSibling);
+        }
+        
+        // 계정 전환 버튼 추가
+        const switchBtn = document.createElement('button');
+        switchBtn.id = 'switch-account-btn';
+        switchBtn.className = 'switch-account-btn';
+        switchBtn.textContent = '계정 전환';
+        switchBtn.addEventListener('click', switchAccount);
+        
+        if (logoutBtn && logoutBtn.parentNode) {
+            logoutBtn.parentNode.insertBefore(switchBtn, logoutBtn);
+        }
+    }
+}
+
+// 로그아웃 처리 함수
+function handleLogout() {
+    // 로컬 스토리지에서 토큰 및 사용자 정보 제거
+    localStorage.removeItem('googleToken');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    
+    // 구글 자동 로그인 비활성화
+    if (typeof google !== 'undefined' && google.accounts) {
+        google.accounts.id.disableAutoSelect();
+    }
+    
+    // UI 리셋
+    resetLoginUI();
+    
+    // 선택적으로 페이지 새로고침
+    // window.location.reload();
+}
+
+// 계정 전환 함수
+function switchAccount() {
+    // 기존 계정 로그아웃 처리
+    localStorage.removeItem('googleToken');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    
+    // 구글 계정 선택 팝업 표시
+    if (typeof google !== 'undefined' && google.accounts) {
+        google.accounts.id.prompt();
+    }
+}
+
+// 로그인 UI 리셋 함수
+function resetLoginUI() {
+    if (signInBtn) {
+        // 원래 로그인 버튼 텍스트로 복원
+        signInBtn.textContent = 'Sign In';
+        signInBtn.classList.remove('logged-in');
+    }
+    
+    // 로그아웃 버튼 제거
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.remove();
+    }
+    
+    // 계정 전환 버튼 제거
+    const switchBtn = document.getElementById('switch-account-btn');
+    if (switchBtn) {
+        switchBtn.remove();
+    }
+}
+
+// 페이지 로드 시 로그인 상태 확인
+document.addEventListener('DOMContentLoaded', function() {
+    // 기존 DOMContentLoaded 코드와 함께...
+    
+    // 로그인 상태 확인
+    checkLoginState();
+    
+    // Google API 로드 확인 및 초기화
+    if (typeof google !== 'undefined' && google.accounts) {
+        initGoogleSignIn();
+    } else {
+        // Google API 스크립트를 동적으로 로드
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = initGoogleSignIn;
+        document.head.appendChild(script);
+    }
+});
+
+// 로그인 상태 확인 함수
+function checkLoginState() {
+    const token = localStorage.getItem('googleToken');
+    const userName = localStorage.getItem('userName');
+    
+    if (token && userName) {
+        try {
+            // 토큰 디코딩
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            
+            // 토큰 만료 확인
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (payload.exp > currentTime) {
+                // 유효한 토큰이면 UI 업데이트
+                updateLoginUI(userName);
+            } else {
+                // 만료된 토큰 제거
+                localStorage.removeItem('googleToken');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('userEmail');
+                resetLoginUI();
+            }
+        } catch (e) {
+            console.error("토큰 처리 오류:", e);
+            localStorage.removeItem('googleToken');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            resetLoginUI();
+        }
+    }
+}
 
 // Function to update UI based on login state
 function updateLoginState(isLoggedIn, userName = '') {

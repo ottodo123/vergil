@@ -256,6 +256,25 @@ header {
     margin-top: 1rem;
 }
 
+/* 로그인/로그아웃 버튼 스타일 */
+.logged-in {
+    background-color: #e6f4ea !important; /* 로그인 상태 배경색 변경 */
+}
+
+.logout-btn, .switch-account-btn {
+    background-color: #f1f3f4;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    margin-left: 8px;
+    font-size: 13px;
+}
+
+.logout-btn:hover, .switch-account-btn:hover {
+    background-color: #e8eaed;
+}
+
 @media (max-width: 768px) {
     .search-container {
         flex-direction: column;
