@@ -20,6 +20,7 @@ const mainTitle = document.getElementById('main-title');
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
+    // 기존 초기화 코드
     loadCSVData();
     loadSavedLists();
 
@@ -40,12 +41,23 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.value = searchQuery;
         performSearch();
     }
+    
+    // 로그인 상태 확인 및 초기화
+    checkLoginState();
+    
+    // Google API 초기화
+    if (typeof google !== 'undefined' && google.accounts) {
+        initGoogleSignIn();
+    } else {
+        // Google API 스크립트가 아직 로드되지 않은 경우
+        window.onGoogleLibraryLoad = initGoogleSignIn;
+    }
 });
 
 // Google Sign-In 초기화 함수
 function initGoogleSignIn() {
-    // Google 클라이언트 ID 설정 (실제 ID로 변경 필요)
-    const CLIENT_ID = '당신의_구글_클라이언트_ID';
+    // Google 클라이언트 ID 설정
+    const CLIENT_ID = '490034991238-p0cp8dchjdl14pk0su5gh79eruipkpdk.apps.googleusercontent.com';
     
     if (typeof google !== 'undefined' && google.accounts) {
         google.accounts.id.initialize({
@@ -53,22 +65,8 @@ function initGoogleSignIn() {
             callback: handleCredentialResponse,
             auto_select: false
         });
-        
-        // 기존 로그인 버튼의 이벤트 리스너를 변경
-        if (signInBtn) {
-            // 기존 이벤트 리스너 제거
-            const newSignInBtn = signInBtn.cloneNode(true);
-            signInBtn.parentNode.replaceChild(newSignInBtn, signInBtn);
-            
-            // 새 이벤트 리스너 추가
-            newSignInBtn.addEventListener('click', () => {
-                google.accounts.id.prompt();
-            });
-        }
     }
 }
-
-// Google Sign-In handler
 window.handleCredentialResponse = function(response) {
     const token = response.credential;
     console.log("ID Token:", token);
@@ -85,46 +83,57 @@ window.handleCredentialResponse = function(response) {
     localStorage.setItem('userName', userName);
     localStorage.setItem('userEmail', userEmail);
     
-    // 로그인 상태 UI 업데이트
-    updateLoginUI(userName);
+    // 페이지 새로고침 - 중요!
+    window.location.reload();
 };
 
 // 로그인 UI 업데이트 함수
 function updateLoginUI(userName) {
-    if (signInBtn) {
-        // 로그인 상태로 버튼 변경
-        signInBtn.textContent = `${userName}님`;
-        signInBtn.classList.add('logged-in');
-        
-        // 로그아웃 버튼 추가
-        addLogoutButton();
+    // Google Sign-In 버튼 숨기기
+    const googleSignInButton = document.querySelector('.g_id_signin');
+    if (googleSignInButton) {
+        googleSignInButton.style.display = 'none';
     }
-}
-// 로그아웃 버튼 추가 함수
-function addLogoutButton() {
-    // 이미 로그아웃 버튼이 있는지 확인
-    if (!document.getElementById('logout-btn')) {
+    
+    // 사용자 정보와 로그아웃/계정 전환 버튼 표시
+    const userActions = document.querySelector('.user-actions');
+    if (userActions) {
+        // 사용자 정보 표시
+        const userInfo = document.createElement('div');
+        userInfo.className = 'user-info';
+        userInfo.textContent = `${userName}님`;
+        userInfo.style.padding = '8px';
+        userInfo.style.backgroundColor = '#e6f4ea';
+        userInfo.style.borderRadius = '4px';
+        userInfo.style.marginBottom = '8px';
+        
+        // 로그아웃 버튼 생성
         const logoutBtn = document.createElement('button');
         logoutBtn.id = 'logout-btn';
         logoutBtn.className = 'logout-btn';
         logoutBtn.textContent = '로그아웃';
         logoutBtn.addEventListener('click', handleLogout);
         
-        // 로그인 버튼 옆에 로그아웃 버튼 추가
-        if (signInBtn && signInBtn.parentNode) {
-            signInBtn.parentNode.insertBefore(logoutBtn, signInBtn.nextSibling);
-        }
-        
-        // 계정 전환 버튼 추가
+        // 계정 전환 버튼 생성
         const switchBtn = document.createElement('button');
         switchBtn.id = 'switch-account-btn';
         switchBtn.className = 'switch-account-btn';
         switchBtn.textContent = '계정 전환';
         switchBtn.addEventListener('click', switchAccount);
         
-        if (logoutBtn && logoutBtn.parentNode) {
-            logoutBtn.parentNode.insertBefore(switchBtn, logoutBtn);
+        // 기존 요소 제거
+        while (userActions.firstChild) {
+            if (userActions.firstChild.className !== 'saved-lists-btn') {
+                userActions.removeChild(userActions.firstChild);
+            } else {
+                break;  // Saved Lists 버튼은 유지
+            }
         }
+        
+        // 새 요소 추가
+        userActions.insertBefore(switchBtn, userActions.firstChild);
+        userActions.insertBefore(logoutBtn, userActions.firstChild);
+        userActions.insertBefore(userInfo, userActions.firstChild);
     }
 }
 
@@ -140,11 +149,8 @@ function handleLogout() {
         google.accounts.id.disableAutoSelect();
     }
     
-    // UI 리셋
-    resetLoginUI();
-    
-    // 선택적으로 페이지 새로고침
-    // window.location.reload();
+    // 페이지 새로고침
+    window.location.reload();
 }
 
 // 계정 전환 함수
@@ -159,48 +165,6 @@ function switchAccount() {
         google.accounts.id.prompt();
     }
 }
-
-// 로그인 UI 리셋 함수
-function resetLoginUI() {
-    if (signInBtn) {
-        // 원래 로그인 버튼 텍스트로 복원
-        signInBtn.textContent = 'Sign In';
-        signInBtn.classList.remove('logged-in');
-    }
-    
-    // 로그아웃 버튼 제거
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.remove();
-    }
-    
-    // 계정 전환 버튼 제거
-    const switchBtn = document.getElementById('switch-account-btn');
-    if (switchBtn) {
-        switchBtn.remove();
-    }
-}
-
-// 페이지 로드 시 로그인 상태 확인
-document.addEventListener('DOMContentLoaded', function() {
-    // 기존 DOMContentLoaded 코드와 함께...
-    
-    // 로그인 상태 확인
-    checkLoginState();
-    
-    // Google API 로드 확인 및 초기화
-    if (typeof google !== 'undefined' && google.accounts) {
-        initGoogleSignIn();
-    } else {
-        // Google API 스크립트를 동적으로 로드
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.defer = true;
-        script.onload = initGoogleSignIn;
-        document.head.appendChild(script);
-    }
-});
 
 // 로그인 상태 확인 함수
 function checkLoginState() {
@@ -222,75 +186,16 @@ function checkLoginState() {
                 localStorage.removeItem('googleToken');
                 localStorage.removeItem('userName');
                 localStorage.removeItem('userEmail');
-                resetLoginUI();
             }
         } catch (e) {
             console.error("토큰 처리 오류:", e);
             localStorage.removeItem('googleToken');
             localStorage.removeItem('userName');
             localStorage.removeItem('userEmail');
-            resetLoginUI();
         }
     }
 }
 
-// Function to update UI based on login state
-function updateLoginState(isLoggedIn, userName = '') {
-    if (isLoggedIn) {
-        // Update sign-in button or show user info
-        if (signInBtn) {
-            signInBtn.textContent = `Signed in as ${userName}`;
-            signInBtn.disabled = true; // Optional: disable the button when logged in
-        }
-        
-        // You can also add a logout button here if needed
-        const logoutBtn = document.createElement('button');
-        logoutBtn.id = 'logout-btn';
-        logoutBtn.textContent = 'Sign Out';
-        logoutBtn.addEventListener('click', handleLogout);
-        
-        // Add logout button near the sign-in button
-        if (signInBtn && signInBtn.parentNode) {
-            signInBtn.parentNode.appendChild(logoutBtn);
-        }
-    }
-}
-
-// Handle logout
-function handleLogout() {
-    // Clear token from local storage
-    localStorage.removeItem('googleToken');
-    
-    // Sign out from Google
-    google.accounts.id.disableAutoSelect();
-    
-    // Refresh page to reflect logged-out state
-    window.location.reload();
-}
-
-// Check login state on page load
-document.addEventListener('DOMContentLoaded', () => {
-    // Add this to your existing DOMContentLoaded handler or create a new one
-    const token = localStorage.getItem('googleToken');
-    if (token) {
-        try {
-            // Decode token to get user info
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            // Check if token is expired
-            const currentTime = Math.floor(Date.now() / 1000);
-            if (payload.exp > currentTime) {
-                // Token is valid, update UI
-                updateLoginState(true, payload.name);
-            } else {
-                // Token is expired, remove it
-                localStorage.removeItem('googleToken');
-            }
-        } catch (e) {
-            console.error("Error processing token:", e);
-            localStorage.removeItem('googleToken');
-        }
-    }
-}); 
 // Load CSV data
 async function loadCSVData() {
     try {
@@ -532,27 +437,40 @@ function displayVocabularyItems(items) {
             const wordIndex = saveLists[listName].findIndex(word => word.Headword === wordToToggle);
             
             if (wordIndex === -1) {
-                // Save to this list
+                // 리스트에 추가
                 saveLists[listName].push(wordData);
                 this.innerHTML = `${listName} (★)`;
                 
-                // 여기에 Default 리스트에도 추가하는 코드 추가
+                // Default 리스트가 아닌 경우 Default 리스트에도 추가
                 if (listName !== "Default List") {
-                    // Default 리스트에 이미 있는지 확인
                     const defaultListIndex = saveLists["Default List"].findIndex(word => word.Headword === wordToToggle);
                     if (defaultListIndex === -1) {
-                        // Default 리스트에 없으면 추가
                         saveLists["Default List"].push(wordData);
                     }
                 }
             } else {
-                // Remove from this list
+                // 리스트에서 제거
                 saveLists[listName].splice(wordIndex, 1);
                 this.innerHTML = `${listName} (☆)`;
                 
-                // Default List가 아닌 경우, 다른 리스트에도 있는지 확인
-                if (listName !== "Default List") {
-                    // 다른 사용자 정의 리스트에 단어가 있는지 확인
+                // Default 리스트에서 제거하는 경우 모든 리스트에서 제거
+                if (listName === "Default List") {
+                    // 모든 리스트에서 해당 단어 제거
+                    for (const list in saveLists) {
+                        if (list !== "Default List") {  // Default 리스트는 이미 위에서 처리했으므로 제외
+                            const indexInList = saveLists[list].findIndex(word => word.Headword === wordToToggle);
+                            if (indexInList !== -1) {
+                                saveLists[list].splice(indexInList, 1);
+                            }
+                        }
+                    }
+                    
+                    // 옵션 버튼 텍스트 업데이트 (모든 리스트 버튼)
+                    document.querySelectorAll(`.save-option-btn[data-word="${wordToToggle}"]`).forEach(optBtn => {
+                        optBtn.innerHTML = `${optBtn.getAttribute('data-list')} (☆)`;
+                    });
+                } else {
+                    // 특정 리스트에서 제거하는 경우, 다른 리스트에 있는지 확인
                     let existsInOtherLists = false;
                     for (const list in saveLists) {
                         if (list !== "Default List" && list !== listName) {
@@ -568,12 +486,18 @@ function displayVocabularyItems(items) {
                         const defaultIndex = saveLists["Default List"].findIndex(word => word.Headword === wordToToggle);
                         if (defaultIndex !== -1) {
                             saveLists["Default List"].splice(defaultIndex, 1);
+                            
+                            // Default 리스트 버튼 업데이트
+                            const defaultBtn = document.querySelector(`.save-option-btn[data-list="Default List"][data-word="${wordToToggle}"]`);
+                            if (defaultBtn) {
+                                defaultBtn.innerHTML = `Default List (☆)`;
+                            }
                         }
                     }
                 }
             }
             
-            // Update parent save button
+            // 별표 아이콘 업데이트
             let savedInAnyList = false;
             for (const list in saveLists) {
                 if (saveLists[list].some(word => word.Headword === wordToToggle)) {
@@ -591,7 +515,7 @@ function displayVocabularyItems(items) {
                 saveBtn.classList.remove('saved');
             }
             
-            // Save to local storage
+            // 로컬 스토리지 업데이트
             localStorage.setItem('saveLists', JSON.stringify(saveLists));
         });
     });
@@ -686,10 +610,20 @@ function updateSaveListTabs(activeListName = null) {
                     const wordIndex = saveLists[listToRemoveFrom].findIndex(word => word.Headword === wordToRemove);
                     
                     if (wordIndex !== -1) {
-                        saveLists[listToRemoveFrom].splice(wordIndex, 1);
-                        
-                        // Default List가 아닌 경우, 다른 리스트에도 있는지 확인
-                        if (listToRemoveFrom !== "Default List") {
+                        // Default List에서 제거하는 경우 모든 리스트에서 제거
+                        if (listToRemoveFrom === "Default List") {
+                            // 모든 리스트에서 해당 단어 제거
+                            for (const list in saveLists) {
+                                const indexInList = saveLists[list].findIndex(word => word.Headword === wordToRemove);
+                                if (indexInList !== -1) {
+                                    saveLists[list].splice(indexInList, 1);
+                                }
+                            }
+                            alert(`"${wordToRemove}" 단어가 모든 리스트에서 제거되었습니다.`);
+                        } else {
+                            // 특정 리스트에서만 제거
+                            saveLists[listToRemoveFrom].splice(wordIndex, 1);
+                            
                             // 다른 사용자 정의 리스트에 단어가 있는지 확인
                             let existsInOtherLists = false;
                             for (const list in saveLists) {
@@ -710,22 +644,26 @@ function updateSaveListTabs(activeListName = null) {
                             }
                         }
                         
+                        // 로컬 스토리지 업데이트
                         localStorage.setItem('saveLists', JSON.stringify(saveLists));
-                        updateSaveListTabs();
                         
-                        // Update main list
+                        // 저장 목록 UI 업데이트
+                        updateSaveListTabs(currentListName);
+                        
+                        // 메인 단어 목록의 별표 아이콘 업데이트
                         const mainListBtn = document.querySelector(`.vocabulary-list .save-btn[data-word="${wordToRemove}"]`);
                         if (mainListBtn) {
-                            // Check if word is saved in any other list
-                            let savedInOtherList = false;
+                            // 아무 리스트에라도 저장되어 있는지 확인
+                            let savedInAnyList = false;
                             for (const list in saveLists) {
                                 if (saveLists[list].some(word => word.Headword === wordToRemove)) {
-                                    savedInOtherList = true;
+                                    savedInAnyList = true;
                                     break;
                                 }
                             }
                             
-                            if (!savedInOtherList) {
+                            // 별표 아이콘 업데이트
+                            if (!savedInAnyList) {
                                 mainListBtn.textContent = '☆';
                                 mainListBtn.classList.remove('saved');
                             }
