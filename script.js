@@ -48,9 +48,77 @@ window.handleCredentialResponse = function(response) {
     const token = response.credential;
     console.log("ID Token:", token);
     // You can decode and use the token here to identify the user
+
+    // Save the token in local storage
+    localStorage.setItem('googleToken', token);
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userName = payload.name;
+    const userEmail = payload.email;
+    
+    // Update UI to show logged-in state
+    updateLoginState(true, userName);
+    
+    // Refresh the page to reflect logged-in state
+    window.location.reload();
 };
 
+// Function to update UI based on login state
+function updateLoginState(isLoggedIn, userName = '') {
+    if (isLoggedIn) {
+        // Update sign-in button or show user info
+        if (signInBtn) {
+            signInBtn.textContent = `Signed in as ${userName}`;
+            signInBtn.disabled = true; // Optional: disable the button when logged in
+        }
+        
+        // You can also add a logout button here if needed
+        const logoutBtn = document.createElement('button');
+        logoutBtn.id = 'logout-btn';
+        logoutBtn.textContent = 'Sign Out';
+        logoutBtn.addEventListener('click', handleLogout);
+        
+        // Add logout button near the sign-in button
+        if (signInBtn && signInBtn.parentNode) {
+            signInBtn.parentNode.appendChild(logoutBtn);
+        }
+    }
+}
 
+// Handle logout
+function handleLogout() {
+    // Clear token from local storage
+    localStorage.removeItem('googleToken');
+    
+    // Sign out from Google
+    google.accounts.id.disableAutoSelect();
+    
+    // Refresh page to reflect logged-out state
+    window.location.reload();
+}
+
+// Check login state on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Add this to your existing DOMContentLoaded handler or create a new one
+    const token = localStorage.getItem('googleToken');
+    if (token) {
+        try {
+            // Decode token to get user info
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            // Check if token is expired
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (payload.exp > currentTime) {
+                // Token is valid, update UI
+                updateLoginState(true, payload.name);
+            } else {
+                // Token is expired, remove it
+                localStorage.removeItem('googleToken');
+            }
+        } catch (e) {
+            console.error("Error processing token:", e);
+            localStorage.removeItem('googleToken');
+        }
+    }
+}); 
 // Load CSV data
 async function loadCSVData() {
     try {
