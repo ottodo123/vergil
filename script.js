@@ -210,7 +210,7 @@ async function loadCSVData() {
         vocabularyList.innerHTML = '<div class="loading">Loading vocabulary data...</div>';
         
         // Fetch the CSV file
-        const response = await fetch('vocabulary_deduplicated_2.csv');
+        const response = await fetch('vocabulary_deduplicated_3.csv');
         const data = await response.text();
         
         // Parse CSV using PapaParse
@@ -386,10 +386,14 @@ function displayVocabularyItems(items) {
             }
         }
         
+        // 필수 단어 여부 확인 (Required 열이 1인 경우)
+        const isRequired = item.Required === 1 || item.Required === "1";
+        
         const vocabularyItem = document.createElement('div');
         vocabularyItem.className = 'vocabulary-item';
         vocabularyItem.innerHTML = `
-            <div class="vocabulary-info">
+            <div class="vocabulary-info ${isRequired ? 'required-word' : ''}">
+                ${isRequired ? '<span class="required-star">★</span>' : ''}
                 <div class="word">${item.Headword}</div>
                 <div class="definition">${item.Definitions}</div>
                 <div class="occurrence">Occurrences in the Aeneid: ${item["Occurrences in the Aeneid"]}</div>
@@ -596,10 +600,14 @@ function updateSaveListTabs(activeListName = null) {
             content.innerHTML = '<p>No words saved in this list.</p>';
         } else {
             saveLists[listName].forEach(word => {
+                // 필수 단어 여부 확인
+                const isRequired = word.Required === 1 || word.Required === "1";
+                
                 const wordItem = document.createElement('div');
                 wordItem.className = 'vocabulary-item';
                 wordItem.innerHTML = `
-                    <div class="vocabulary-info">
+                    <div class="vocabulary-info ${isRequired ? 'required-word' : ''}">
+                        ${isRequired ? '<span class="required-star">★</span>' : ''}
                         <div class="word">${word.Headword}</div>
                         <div class="definition">${word.Definitions}</div>
                         <div class="occurrence">Occurrences in the Aeneid: ${word["Occurrences in the Aeneid"]}</div>
