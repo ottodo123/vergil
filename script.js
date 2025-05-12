@@ -140,7 +140,6 @@ function updateLoginUI(userName) {
         }
         
         // 새 요소 추가
-        userActions.insertBefore(switchBtn, userActions.firstChild);
         userActions.insertBefore(logoutBtn, userActions.firstChild);
         userActions.insertBefore(userInfo, userActions.firstChild);
     }
