@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latin Vocabulary Glossary</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 id="main-title">Latin Vocabulary Glossary</h1>
+        </div>
+    </header>
+
+    <!-- 메인 페이지 - 단어 목록 -->
+    <div id="main-page" class="container page">
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search words...">
+                <button class="search-btn" id="search-btn">Search</button>
+            </div>
+            <div class="user-actions">
+                <button class="sign-in-btn" id="sign-in-btn">Sign In</button>
+                <button class="saved-lists-btn" id="saved-lists-btn">Saved Lists</button>
+            </div>
+        </div>
+
+        <div class="vocabulary-list" id="vocabulary-list">
+            <div class="loading">Loading data...</div>
+        </div>
+    </div>
+
+    <!-- 저장 리스트 페이지 -->
+    <div id="saved-lists-page" class="container page" style="display: none;">
+        <h2>Saved Lists</h2>
+        
+        <div class="save-list-tabs" id="save-list-tabs">
+            <!-- Tabs will be dynamically added here -->
+        </div>
+        
+        <div id="save-list-contents">
+            <!-- List contents will be dynamically added here -->
+        </div>
+        
+        <div class="list-management">
+            <h3>Create New List</h3>
+            <input type="text" id="new-list-name" class="new-list-input" placeholder="List name...">
+            <button id="create-list-btn" class="create-list-btn">Create</button>
+        </div>
+    </div>
+
+    <!-- Import PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <!-- Main script -->
+    <script src="script.js"></script>
+</body>
+</html>
