@@ -16,7 +16,6 @@ const saveListTabs = document.getElementById('save-list-tabs');
 const saveListContents = document.getElementById('save-list-contents');
 const newListNameInput = document.getElementById('new-list-name');
 const createListBtn = document.getElementById('create-list-btn');
-const signInBtn = document.getElementById('sign-in-btn');
 const mainTitle = document.getElementById('main-title');
 
 // Initialize the app
@@ -42,6 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
         performSearch();
     }
 });
+
+
+// Google Sign-In handler
+window.handleCredentialResponse = function(response) {
+    const token = response.credential;
+    console.log("ID Token:", token);
+    // You can decode and use the token here to identify the user
+};
+
 
 // Load CSV data
 async function loadCSVData() {
@@ -89,6 +97,16 @@ async function loadCSVData() {
         vocabularyList.innerHTML = '<div class="no-results">Failed to load vocabulary data.</div>';
     }
 }
+
+
+// Sign In button fallback (not used now)
+const signInBtn = document.getElementById('sign-in-btn');
+if (signInBtn) {
+    signInBtn.addEventListener('click', () => {
+        alert('Sign In feature is now handled via Google Sign-In.');
+    });
+}
+
 
 // Search functionality
 searchBtn.addEventListener('click', performSearch);
