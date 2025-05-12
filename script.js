@@ -116,7 +116,7 @@ function updateLoginUI(userName) {
         // 사용자 정보 표시
         const userInfo = document.createElement('div');
         userInfo.className = 'user-info';
-        userInfo.textContent = `${userName}님`;
+        userInfo.textContent = `${userName}`;
         userInfo.style.padding = '8px';
         userInfo.style.backgroundColor = '#e6f4ea';
         userInfo.style.borderRadius = '4px';
@@ -126,15 +126,9 @@ function updateLoginUI(userName) {
         const logoutBtn = document.createElement('button');
         logoutBtn.id = 'logout-btn';
         logoutBtn.className = 'logout-btn';
-        logoutBtn.textContent = '로그아웃';
+        logoutBtn.textContent = 'Logout';
         logoutBtn.addEventListener('click', handleLogout);
-        
-        // 계정 전환 버튼 생성
-        const switchBtn = document.createElement('button');
-        switchBtn.id = 'switch-account-btn';
-        switchBtn.className = 'switch-account-btn';
-        switchBtn.textContent = '계정 전환';
-        switchBtn.addEventListener('click', switchAccount);
+
         
         // 기존 요소 제거
         while (userActions.firstChild) {
