@@ -10,7 +10,7 @@ let googleAuth = null;
 let gapiInitialized = false;
 let userFileId = null;
 const GOOGLE_CLIENT_ID = '490034991238-p0cp8dchjdl14pk0su5gh79eruipkpdk.apps.googleusercontent.com'; // Your client ID
-const GOOGLE_API_KEY = 'blank'; // Replace with your API key from Google Cloud Console
+const GOOGLE_API_KEY = 'blank1'; // Replace with your API key from Google Cloud Console
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 
