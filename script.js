@@ -614,9 +614,44 @@ function updateSaveListTabs(activeListName = null) {
         content.className = `save-list-content ${listName === activeListName ? 'active' : ''}`;
         content.id = `save-list-content-${listName.replace(/\s+/g, '-')}`;
         
+        // Add action buttons for Copy and Print - NEW CODE
+        const actionButtons = document.createElement('div');
+        actionButtons.className = 'list-action-buttons';
+        
+        // Copy button
+        const copyButton = document.createElement('button');
+        copyButton.className = 'action-btn copy-btn';
+        copyButton.innerHTML = '<span class="btn-icon">📋</span> Copy List';
+        copyButton.addEventListener('click', function() {
+            copyList(listName);
+        });
+        actionButtons.appendChild(copyButton);
+        
+        // Print button
+        const printButton = document.createElement('button');
+        printButton.className = 'action-btn print-btn';
+        printButton.innerHTML = '<span class="btn-icon">🖨️</span> Print List';
+        printButton.addEventListener('click', function() {
+            printList(listName);
+        });
+        actionButtons.appendChild(printButton);
+        
+        // Add action buttons at the top of content
+        content.appendChild(actionButtons);
+        
+        // Word count info
+        const wordCountInfo = document.createElement('div');
+        wordCountInfo.className = 'word-count-info';
+        wordCountInfo.textContent = `${saveLists[listName].length} words in this list`;
+        content.appendChild(wordCountInfo);
+        
         if (saveLists[listName].length === 0) {
-            content.innerHTML = '<p>No words saved in this list.</p>';
+            content.innerHTML += '<p>No words saved in this list.</p>';
         } else {
+            // Create a container for all the word items (to preserve existing content)
+            const wordItemsContainer = document.createElement('div');
+            wordItemsContainer.className = 'word-items-container';
+            
             saveLists[listName].forEach(word => {
                 // 필수 단어 여부 확인
                 const isRequired = word.Required === 1 || word.Required === "1";
@@ -632,11 +667,12 @@ function updateSaveListTabs(activeListName = null) {
                     </div>
                     <button class="save-btn saved" data-word="${word.Headword}" data-list="${listName}">★</button>
                 `;
-                content.appendChild(wordItem);
+                wordItemsContainer.appendChild(wordItem);
             });
             
+            content.appendChild(wordItemsContainer);
+            
             // Remove word from list
-            // 약 310-350줄 근처의 updateSaveListTabs 함수 내부
             content.querySelectorAll('.save-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const wordToRemove = this.getAttribute('data-word');
@@ -798,4 +834,195 @@ window.addEventListener('error', function(e) {
             </div>
         `;
     }
+});
+
+// Function to copy list to clipboard
+function copyList(listName) {
+    const words = saveLists[listName];
+    
+    if (words.length === 0) {
+        alert('No words to copy in this list.');
+        return;
+    }
+    
+    // Format the text to copy
+    let copyText = `${listName} - Vergil Glossary\n\n`;
+    
+    words.forEach(word => {
+        const isRequired = word.Required === 1 || word.Required === "1";
+        copyText += `${isRequired ? '★ ' : ''}${word.Headword}: ${word.Definitions}\n`;
+        copyText += `(Occurrences: ${word["Occurrences in the Aeneid"]})\n\n`;
+    });
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(copyText)
+        .then(() => {
+            // Show success message
+            const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
+            const copyBtn = listContent.querySelector('.copy-btn');
+            
+            // Change button text temporarily
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<span class="btn-icon">✓</span> Copied!';
+            
+            // Reset button text after 2 seconds
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+            }, 2000);
+        })
+        .catch(err => {
+            console.error('Could not copy text: ', err);
+            alert('Failed to copy to clipboard. Please try again.');
+        });
+}
+
+// Function to generate and download a PDF
+function printList(listName) {
+    const words = saveLists[listName];
+    
+    if (words.length === 0) {
+        alert('No words to print in this list.');
+        return;
+    }
+
+    // Show loading indicator
+    const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
+    const printBtn = listContent.querySelector('.print-btn');
+    const originalText = printBtn.innerHTML;
+    printBtn.innerHTML = '<span class="btn-icon">⏳</span> Preparing PDF...';
+    
+    // Import jsPDF library if not already loaded
+    if (typeof jsPDF === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = function() {
+            generatePDF(listName, words, printBtn, originalText);
+        };
+        document.head.appendChild(script);
+    } else {
+        generatePDF(listName, words, printBtn, originalText);
+    }
+}
+
+// Helper function to generate PDF
+function generatePDF(listName, words, printBtn, originalBtnText) {
+    // Create new PDF document
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+    });
+    
+    // Set font sizes
+    const titleFontSize = 16;
+    const wordFontSize = 11;
+    const defFontSize = 10;
+    const occurrenceFontSize = 9;
+    
+    // Page dimensions
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    
+    // Title
+    doc.setFontSize(titleFontSize);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${listName} - Vergil Glossary`, margin, margin);
+    
+    // Word count
+    doc.setFontSize(defFontSize);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total words: ${words.length}`, margin, margin + 7);
+    
+    // Date
+    const today = new Date();
+    const dateStr = today.toLocaleDateString();
+    doc.text(`Generated: ${dateStr}`, pageWidth - margin - 40, margin + 7);
+    
+    // Draw a line
+    doc.setLineWidth(0.3);
+    doc.line(margin, margin + 10, pageWidth - margin, margin + 10);
+    
+    // Start position for words
+    let y = margin + 20;
+    let currentPage = 1;
+    
+    // Process each word
+    words.forEach((word, index) => {
+        const isRequired = word.Required === 1 || word.Required === "1";
+        const headword = isRequired ? `★ ${word.Headword}` : word.Headword;
+        const definition = word.Definitions;
+        const occurrences = `Occurrences: ${word["Occurrences in the Aeneid"]}`;
+        
+        // Calculate space needed for this entry
+        const entryHeight = 20; // Approximate height for a typical entry
+        
+        // Check if we need a new page
+        if (y + entryHeight > pageHeight - margin) {
+            doc.addPage();
+            currentPage++;
+            
+            // Reset position for new page
+            y = margin + 10;
+            
+            // Add header to new page
+            doc.setFontSize(defFontSize);
+            doc.setFont('helvetica', 'italic');
+            doc.text(`${listName} (continued) - Page ${currentPage}`, margin, margin);
+            doc.line(margin, margin + 3, pageWidth - margin, margin + 3);
+            y += 10;
+        }
+        
+        // Headword
+        doc.setFontSize(wordFontSize);
+        doc.setFont('helvetica', 'bold');
+        doc.text(headword, margin, y);
+        
+        // Definition
+        doc.setFontSize(defFontSize);
+        doc.setFont('helvetica', 'normal');
+        
+        // Split definition into multiple lines if too long
+        const definitionLines = doc.splitTextToSize(definition, pageWidth - 2 * margin);
+        doc.text(definitionLines, margin, y + 5);
+        
+        // Occurrences (in italic)
+        doc.setFontSize(occurrenceFontSize);
+        doc.setFont('helvetica', 'italic');
+        doc.text(occurrences, margin, y + 5 + (definitionLines.length * 5));
+        
+        // Update y position for next word
+        y += 5 + (definitionLines.length * 5) + 10;
+        
+        // Add a separator line between words (except the last one)
+        if (index < words.length - 1) {
+            doc.setDrawColor(200, 200, 200); // Light gray
+            doc.setLineWidth(0.1);
+            doc.line(margin, y - 5, pageWidth - margin, y - 5);
+        }
+    });
+    
+    // Save the PDF
+    const filename = `${listName.replace(/\s+/g, '_')}_vergil_glossary.pdf`;
+    doc.save(filename);
+    
+    // Reset button text
+    printBtn.innerHTML = '<span class="btn-icon">✓</span> PDF Downloaded!';
+    
+    // Reset button text after 2 seconds
+    setTimeout(() => {
+        printBtn.innerHTML = originalBtnText;
+    }, 2000);
+}
+
+// Add this to the document load event to make sure jsPDF is available
+document.addEventListener('DOMContentLoaded', function() {
+    // Load jsPDF library at startup
+    if (typeof jsPDF === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        document.head.appendChild(script);
+    }
+    // ... your existing code
 });

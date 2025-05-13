@@ -354,3 +354,99 @@ margin-left:20vw;
         width: 100%;
     }
 }
+
+/* List action buttons container */
+.list-action-buttons {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+
+/* Action buttons (Copy and Print) */
+.action-btn {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    background-color: #f1f3f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: #e8eaed;
+    color: #333;
+}
+
+.copy-btn:hover {
+    background-color: #e3f2fd;
+    border-color: #bbdefb;
+}
+
+.print-btn:hover {
+    background-color: #e8f5e9;
+    border-color: #c8e6c9;
+}
+
+/* Button icons */
+.btn-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* Word count display */
+.word-count-info {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #eee;
+}
+
+/* Container for word items in saved lists */
+.word-items-container {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+/* Print-specific styling that will be included in the PDF */
+@media print {
+    body {
+        font-size: 11pt;
+    }
+    
+    .word {
+        font-weight: bold;
+        font-size: 12pt;
+        margin-bottom: 4pt;
+    }
+    
+    .definition {
+        font-size: 11pt;
+        margin-bottom: 4pt;
+    }
+    
+    .occurrence {
+        font-style: italic;
+        font-size: 10pt;
+    }
+    
+    .vocabulary-item {
+        page-break-inside: avoid;
+        margin-bottom: 10pt;
+        border-bottom: 1pt solid #eee;
+        padding-bottom: 10pt;
+    }
+    
+    /* Hide UI elements when printing */
+    .save-btn, .header, .search-container, .list-action-buttons {
+        display: none !important;
+    }
+}
