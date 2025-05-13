@@ -5,6 +5,238 @@ let saveLists = {
 };
 let currentListName = "Default List";
 let googleAuth = null;
+
+// NEW: Add these Google Drive API variables
+let gapiInitialized = false;
+let userFileId = null;
+const GOOGLE_CLIENT_ID = '490034991238-p0cp8dchjdl14pk0su5gh79eruipkpdk.apps.googleusercontent.com'; // Your client ID
+const GOOGLE_API_KEY = 'AIzaSyBybTVXorrzd54pyagVg0WLuAXFmVATakY'; // Replace with your API key from Google Cloud Console
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+
+// NEW: Add these Google Drive API initialization functions
+// 1. Initialize the Google API client
+function initializeGoogleAPI() {
+  if (gapiInitialized) return Promise.resolve();
+  
+  return new Promise((resolve, reject) => {
+    gapi.load('client', async () => {
+      try {
+        await gapi.client.init({
+          apiKey: GOOGLE_API_KEY,
+          discoveryDocs: [DISCOVERY_DOC],
+        });
+        gapiInitialized = true;
+        console.log('Google API client initialized');
+        resolve();
+      } catch (error) {
+        console.error('Error initializing Google API client:', error);
+        reject(error);
+      }
+    });
+  });
+}
+
+// 2. Function to get access token from Google auth
+async function getAccessToken() {
+  // Get the ID token from localStorage
+  const idToken = localStorage.getItem('googleToken');
+  if (!idToken) {
+    throw new Error('User not signed in');
+  }
+  
+  // Exchange the ID token for access token
+  return new Promise((resolve, reject) => {
+    // Use the tokenClient to get an access token
+    google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: SCOPES,
+      callback: (tokenResponse) => {
+        if (tokenResponse.error) {
+          reject(tokenResponse);
+        } else {
+          resolve(tokenResponse.access_token);
+        }
+      },
+    }).requestAccessToken();
+  });
+}
+
+// 3. Function to find existing data file in user's appdata folder
+async function findUserDataFile() {
+  try {
+    // Initialize Google API if needed
+    await initializeGoogleAPI();
+    
+    // Set the access token
+    const accessToken = await getAccessToken();
+    gapi.client.setToken({ access_token: accessToken });
+    
+    // Search for the file
+    const response = await gapi.client.drive.files.list({
+      spaces: 'appDataFolder',
+      fields: 'files(id, name)',
+      q: "name='vergil_glossary_data.json'"
+    });
+    
+    const files = response.result.files;
+    if (files && files.length > 0) {
+      userFileId = files[0].id;
+      console.log('Found user data file:', userFileId);
+      return userFileId;
+    } else {
+      console.log('No user data file found');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error finding user data file:', error);
+    return null;
+  }
+}
+
+// 4. Function to load user data from Google Drive
+async function loadUserDataFromDrive() {
+  try {
+    // Initialize Google API
+    await initializeGoogleAPI();
+    
+    // Find user data file
+    const fileId = await findUserDataFile();
+    if (!fileId) {
+      console.log('No user data file to load');
+      return false;
+    }
+    
+    // Set the access token
+    const accessToken = await getAccessToken();
+    gapi.client.setToken({ access_token: accessToken });
+    
+    // Get file content
+    const response = await gapi.client.drive.files.get({
+      fileId: fileId,
+      alt: 'media'
+    });
+    
+    // Parse the data
+    const userData = JSON.parse(response.body);
+    console.log('Loaded user data from Drive:', userData);
+    
+    if (userData) {
+      // Update local data
+      saveLists = userData;
+      
+      // Update UI
+      displayVocabularyItems(vocabularyData);
+      if (document.getElementById('saved-lists-page').style.display !== 'none') {
+        updateSaveListTabs();
+      }
+      
+      // Also update localStorage as backup
+      localStorage.setItem('saveLists', JSON.stringify(saveLists));
+      
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error loading user data from Drive:', error);
+    return false;
+  }
+}
+
+// 5. Function to save user data to Google Drive
+async function saveUserDataToDrive() {
+  try {
+    // Save to localStorage as backup
+    localStorage.setItem('saveLists', JSON.stringify(saveLists));
+    
+    // Check if user is signed in
+    const token = localStorage.getItem('googleToken');
+    if (!token) {
+      console.log('User not signed in, skipping Drive save');
+      return false;
+    }
+    
+    // Initialize Google API
+    await initializeGoogleAPI();
+    
+    // Set the access token
+    const accessToken = await getAccessToken();
+    gapi.client.setToken({ access_token: accessToken });
+    
+    // Prepare file metadata and content
+    const fileMetadata = {
+      name: 'vergil_glossary_data.json',
+      mimeType: 'application/json'
+    };
+    
+    // Check if we need to create or update the file
+    let fileId = await findUserDataFile();
+    
+    if (fileId) {
+      // Update existing file
+      console.log('Updating existing file:', fileId);
+      const response = await gapi.client.request({
+        path: `/upload/drive/v3/files/${fileId}`,
+        method: 'PATCH',
+        params: {
+          uploadType: 'media'
+        },
+        body: JSON.stringify(saveLists)
+      });
+      console.log('File updated successfully:', response);
+    } else {
+      // Create new file in appDataFolder
+      console.log('Creating new file in appDataFolder');
+      fileMetadata.parents = ['appDataFolder'];
+      
+      const response = await gapi.client.request({
+        path: '/upload/drive/v3/files',
+        method: 'POST',
+        params: {
+          uploadType: 'multipart'
+        },
+        headers: {
+          'Content-Type': 'multipart/related; boundary=foo'
+        },
+        body: '--foo\n' +
+              'Content-Type: application/json\n\n' +
+              JSON.stringify(fileMetadata) +
+              '\n\n' +
+              '--foo\n' +
+              'Content-Type: application/json\n\n' +
+              JSON.stringify(saveLists) +
+              '\n\n' +
+              '--foo--'
+      });
+      
+      userFileId = response.result.id;
+      console.log('File created successfully:', userFileId);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error saving user data to Drive:', error);
+    return false;
+  }
+}
+
+// 6. Add a unified function to save data
+function saveListsToStorage() {
+  // Always save to localStorage as backup
+  localStorage.setItem('saveLists', JSON.stringify(saveLists));
+  
+  // Try to save to Google Drive
+  if (localStorage.getItem('googleToken')) {
+    saveUserDataToDrive().catch(error => {
+      console.error('Error in Drive save:', error);
+    });
+  }
+}
+
+
+
+
 // DOM elements
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
@@ -23,7 +255,13 @@ const aboutPage = document.getElementById('about-page');
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
     loadCSVData();
-    loadSavedLists();
+    
+    // Change this to handle the async nature of loadSavedLists
+    loadSavedLists().then(() => {
+        console.log("Saved lists loaded");
+    }).catch(error => {
+        console.error("Error loading saved lists:", error);
+    });
 
     // URL 파라미터에 따라 페이지 표시
     const urlParams = new URLSearchParams(window.location.search);
@@ -70,40 +308,49 @@ function initGoogleSignIn() {
         });
     }
 }
+// handleCredentialResponse function
 window.handleCredentialResponse = function(response) {
-    console.log("Google Sign-In 응답:", response);
+    console.log("Google Sign-In response:", response);
     
     if (response && response.credential) {
-        const token = response.credential;
-        console.log("ID Token:", token);
+      const token = response.credential;
+      console.log("ID Token:", token);
+      
+      try {
+        // Store token in localStorage
+        localStorage.setItem('googleToken', token);
         
-        try {
-            // 토큰을 로컬 스토리지에 저장
-            localStorage.setItem('googleToken', token);
-            
-            // 토큰에서 사용자 정보 추출
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            console.log("사용자 정보:", payload);
-            
-            const userName = payload.name;
-            const userEmail = payload.email;
-            
-            // 사용자 정보 저장
-            localStorage.setItem('userName', userName);
-            localStorage.setItem('userEmail', userEmail);
-            
-            // 로그인 상태 UI 업데이트
-            updateLoginUI(userName);
-            
-            // 선택적: 페이지 새로고침 대신 즉시 UI 업데이트
-            // window.location.reload();
-        } catch (error) {
-            console.error("토큰 처리 오류:", error);
-        }
+        // Extract user information from the token
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log("User info:", payload);
+        
+        const userName = payload.name;
+        const userEmail = payload.email;
+        
+        // Save user info to localStorage
+        localStorage.setItem('userName', userName);
+        localStorage.setItem('userEmail', userEmail);
+        
+        // Update UI to show logged in state
+        updateLoginUI(userName);
+        
+        // Try to load user data from Drive
+        loadUserDataFromDrive().then(success => {
+          if (!success) {
+            // If no Drive data, we'll use local data and upload it on next save
+            console.log('No data found in Drive, will upload local data on next save');
+          }
+        }).catch(error => {
+          console.error('Error in initial Drive sync:', error);
+        });
+        
+      } catch (error) {
+        console.error("Token processing error:", error);
+      }
     } else {
-        console.error("응답에 credential이 없습니다:", response);
+      console.error("Response contains no credential:", response);
     }
-};
+  };
 
 // 로그인 UI 업데이트 함수
 function updateLoginUI(userName) {
@@ -291,6 +538,23 @@ function performSearch() {
         (item.Headword_Data && item.Headword_Data.toLowerCase().includes(searchTerm))
     );
     
+    // Add back button code here
+    // 뒤로가기 버튼이 없으면 추가
+    if (!document.getElementById('back-btn')) {
+        const backBtn = document.createElement('button');
+        backBtn.id = 'back-btn';
+        backBtn.className = 'back-btn';
+        backBtn.textContent = 'Back to All Words';
+        backBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            displayVocabularyItems(vocabularyData);
+            this.remove(); // 버튼 제거
+        });
+        
+        // 어휘 목록 위에 버튼 추가
+        vocabularyList.parentNode.insertBefore(backBtn, vocabularyList);
+    }
+    
     displayVocabularyItems(filteredVocabulary);
 }
 
@@ -352,39 +616,6 @@ function updateURL(params) {
     window.history.pushState({}, '', url);
 }
 
-// Search 함수 근처에 추가 (약 50-70줄 근처)
-function performSearch() {
-    const searchTerm = searchInput.value.toLowerCase().trim();
-    
-    if (searchTerm === '') {
-        displayVocabularyItems(vocabularyData);
-        return;
-    }
-    
-    const filteredVocabulary = vocabularyData.filter(item => 
-        item.Headword.toLowerCase().includes(searchTerm) || 
-        item.Definitions.toLowerCase().includes(searchTerm) ||
-        (item.Headword_Data && item.Headword_Data.toLowerCase().includes(searchTerm))
-    );
-    
-    // 뒤로가기 버튼이 없으면 추가
-    if (!document.getElementById('back-btn')) {
-        const backBtn = document.createElement('button');
-        backBtn.id = 'back-btn';
-        backBtn.className = 'back-btn';
-        backBtn.textContent = 'Back to All Words';
-        backBtn.addEventListener('click', function() {
-            searchInput.value = '';
-            displayVocabularyItems(vocabularyData);
-            this.remove(); // 버튼 제거
-        });
-        
-        // 어휘 목록 위에 버튼 추가
-        vocabularyList.parentNode.insertBefore(backBtn, vocabularyList);
-    }
-    
-    displayVocabularyItems(filteredVocabulary);
-}
 
 // Display vocabulary items
 function displayVocabularyItems(items) {
@@ -546,7 +777,7 @@ function displayVocabularyItems(items) {
             }
             
             // 로컬 스토리지 업데이트
-            localStorage.setItem('saveLists', JSON.stringify(saveLists));
+            saveListsToStorage();
         });
     });
     
@@ -576,7 +807,7 @@ createListBtn.addEventListener('click', () => {
     
     // Create new list
     saveLists[newListName] = [];
-    localStorage.setItem('saveLists', JSON.stringify(saveLists));
+    saveListsToStorage();
     
     // Update UI
     newListNameInput.value = '';
@@ -715,7 +946,7 @@ function updateSaveListTabs(activeListName = null) {
                         }
                         
                         // 로컬 스토리지 업데이트
-                        localStorage.setItem('saveLists', JSON.stringify(saveLists));
+                        saveListsToStorage();
                         
                         // 저장 목록 UI 업데이트
                         updateSaveListTabs(currentListName);
@@ -758,7 +989,7 @@ function updateSaveListTabs(activeListName = null) {
                 e.stopPropagation();
                 if (confirm(`Delete list "${listName}"?`)) {
                     delete saveLists[listName];
-                    localStorage.setItem('saveLists', JSON.stringify(saveLists));
+                    saveListsToStorage();
                     
                     // Switch to Default List
                     switchSaveList("Default List");
@@ -808,16 +1039,27 @@ window.addEventListener('popstate', function() {
     }
 });
 
-// Load saved lists from local storage
-function loadSavedLists() {
+// Load saved lists from Google Drive
+async function loadSavedLists() {
+    // First check localStorage as a fast initial load
     const storedLists = localStorage.getItem('saveLists');
     if (storedLists) {
-        saveLists = JSON.parse(storedLists);
+      saveLists = JSON.parse(storedLists);
     } else {
-        // Initialize with Default List
-        saveLists = { "Default List": [] };
+      // Initialize with Default List
+      saveLists = { "Default List": [] };
     }
-}
+    
+    // If user is logged in, try to load from Drive
+    if (localStorage.getItem('googleToken')) {
+      try {
+        // This will update the UI if successful
+        await loadUserDataFromDrive();
+      } catch (error) {
+        console.error('Error loading from Drive:', error);
+      }
+    }
+  }
 
 // Sign In button event (to be implemented later)
 signInBtn.addEventListener('click', () => {
