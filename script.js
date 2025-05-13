@@ -892,27 +892,13 @@ function printList(listName) {
     printBtn.innerHTML = '<span class="btn-icon">⏳</span> Preparing PDF...';
     
     // Debug the jsPDF library availability
-    console.log("jsPDF availability check:", 
-                "window.jspdf =", typeof window.jspdf, 
-                "jsPDF =", typeof jsPDF);
+    console.log("jsPDF availability check:", typeof window.jspdf);
     
-    // FIXED: Check for window.jspdf (lowercase) not jsPDF
     if (typeof window.jspdf === 'undefined') {
-        console.log("jsPDF not found, loading it now...");
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-        script.onload = function() {
-            console.log("jsPDF loaded via script tag");
-            generatePDF(listName, words, printBtn, originalText);
-        };
-        script.onerror = function(e) {
-            console.error("Failed to load jsPDF:", e);
-            alert("Failed to load PDF generation library");
-            printBtn.innerHTML = originalText;
-        };
-        document.head.appendChild(script);
+        alert("PDF library not loaded. Please refresh the page and try again.");
+        printBtn.innerHTML = originalText;
+        return; // Exit early if jsPDF is not available
     } else {
-        console.log("jsPDF already loaded, generating PDF...");
         generatePDF(listName, words, printBtn, originalText);
     }
 }
@@ -920,14 +906,14 @@ function printList(listName) {
 // Helper function to generate PDF
 function generatePDF(listName, words, printBtn, originalBtnText) {
     try {
-        // Create new PDF document - use letter size instead of A4
+        // Create new PDF document - use letter size
         const { jsPDF } = window.jspdf;
         
         // Create document with letter size
         const doc = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: 'letter'  // Changed from 'a4' to 'letter'
+            format: 'letter'
         });
         
         // Set font sizes
@@ -940,12 +926,12 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         
-        // Increase margins to prevent text going off the edge
+        // Increase margins even more to prevent text going off the edge
         const margin = {
-            left: 20,    // Increased from 15
-            right: 20,   // Increased from 15
+            left: 25,    // Increased from 20
+            right: 25,   // Increased from 20
             top: 15,
-            bottom: 15
+            bottom: 20   // Increased from 15
         };
         
         // Title
@@ -971,6 +957,13 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
         let y = margin.top + 20;
         let currentPage = 1;
         
+        // Text processing helpers
+        function cleanDefinition(text) {
+            // Remove any problematic characters or sequences
+            if (!text) return "";
+            return text.replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
+        }
+        
         // Process each word
         words.forEach((word, index) => {
             const isRequired = word.Required === 1 || word.Required === "1";
@@ -978,11 +971,13 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
             // Use Headword_Data instead of Headword
             const headwordText = word.Headword_Data || word.Headword;
             const headword = isRequired ? `★ ${headwordText}` : headwordText;
-            const definition = word.Definitions;
+            
+            // Clean definition text
+            const definition = cleanDefinition(word.Definitions);
             const occurrences = `Occurrences: ${word["Occurrences in the Aeneid"]}`;
             
-            // Calculate available width for text - use the margins correctly
-            const textWidth = pageWidth - margin.left - margin.right;
+            // Calculate available width for text - reduced width to ensure proper margins
+            const textWidth = pageWidth - margin.left - margin.right - 10; // Extra 10mm buffer
             
             // Split definition into multiple lines with proper width constraint
             const definitionLines = doc.splitTextToSize(definition, textWidth);
