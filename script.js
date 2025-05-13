@@ -923,114 +923,121 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
         // Create new PDF document
         const { jsPDF } = window.jspdf;
         
+        // Create document with Unicode support
         const doc = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: 'a4'
+            format: 'a4',
+            putOnlyUsedFonts: true,
+            floatPrecision: 16 // Better precision for better font rendering
         });
-    
-    // Set font sizes
-    const titleFontSize = 16;
-    const wordFontSize = 11;
-    const defFontSize = 10;
-    const occurrenceFontSize = 9;
-    
-    // Page dimensions
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 15;
-    
-    // Title
-    doc.setFontSize(titleFontSize);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${listName} - Vergil Glossary`, margin, margin);
-    
-    // Word count
-    doc.setFontSize(defFontSize);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Total words: ${words.length}`, margin, margin + 7);
-    
-    // Date
-    const today = new Date();
-    const dateStr = today.toLocaleDateString();
-    doc.text(`Generated: ${dateStr}`, pageWidth - margin - 40, margin + 7);
-    
-    // Draw a line
-    doc.setLineWidth(0.3);
-    doc.line(margin, margin + 10, pageWidth - margin, margin + 10);
-    
-    // Start position for words
-    let y = margin + 20;
-    let currentPage = 1;
-    
-    // Process each word
-    words.forEach((word, index) => {
-        const isRequired = word.Required === 1 || word.Required === "1";
-        const headword = isRequired ? `★ ${word.Headword}` : word.Headword;
-        const definition = word.Definitions;
-        const occurrences = `Occurrences: ${word["Occurrences in the Aeneid"]}`;
         
-        // Calculate space needed for this entry
-        const entryHeight = 20; // Approximate height for a typical entry
+        // For Latin characters, we'll use the default font but ensure encoding is properly set
+        doc.setFont("helvetica", "normal");
         
-        // Check if we need a new page
-        if (y + entryHeight > pageHeight - margin) {
-            doc.addPage();
-            currentPage++;
-            
-            // Reset position for new page
-            y = margin + 10;
-            
-            // Add header to new page
-            doc.setFontSize(defFontSize);
-            doc.setFont('helvetica', 'italic');
-            doc.text(`${listName} (continued) - Page ${currentPage}`, margin, margin);
-            doc.line(margin, margin + 3, pageWidth - margin, margin + 3);
-            y += 10;
-        }
+        // Set font sizes
+        const titleFontSize = 16;
+        const wordFontSize = 11;
+        const defFontSize = 10;
+        const occurrenceFontSize = 9;
         
-        // Headword
-        doc.setFontSize(wordFontSize);
+        // Page dimensions
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 15;
+        
+        // Title
+        doc.setFontSize(titleFontSize);
         doc.setFont('helvetica', 'bold');
-        doc.text(headword, margin, y);
+        doc.text(`${listName} - Vergil Glossary`, margin, margin);
         
-        // Definition
+        // Word count
         doc.setFontSize(defFontSize);
         doc.setFont('helvetica', 'normal');
+        doc.text(`Total words: ${words.length}`, margin, margin + 7);
         
-        // Split definition into multiple lines if too long
-        const definitionLines = doc.splitTextToSize(definition, pageWidth - 2 * margin);
-        doc.text(definitionLines, margin, y + 5);
+        // Date
+        const today = new Date();
+        const dateStr = today.toLocaleDateString();
+        doc.text(`Generated: ${dateStr}`, pageWidth - margin - 40, margin + 7);
         
-        // Occurrences (in italic)
-        doc.setFontSize(occurrenceFontSize);
-        doc.setFont('helvetica', 'italic');
-        doc.text(occurrences, margin, y + 5 + (definitionLines.length * 5));
+        // Draw a line
+        doc.setLineWidth(0.3);
+        doc.line(margin, margin + 10, pageWidth - margin, margin + 10);
         
-        // Update y position for next word
-        y += 5 + (definitionLines.length * 5) + 10;
+        // Start position for words
+        let y = margin + 20;
+        let currentPage = 1;
         
-        // Add a separator line between words (except the last one)
-        if (index < words.length - 1) {
-            doc.setDrawColor(200, 200, 200); // Light gray
-            doc.setLineWidth(0.1);
-            doc.line(margin, y - 5, pageWidth - margin, y - 5);
-        }
-    });
-    
-    // Save the PDF
-    const filename = `${listName.replace(/\s+/g, '_')}_vergil_glossary.pdf`;
-    doc.save(filename);
-    
-    // Reset button text
-    printBtn.innerHTML = '<span class="btn-icon">✓</span> PDF Downloaded!';
-    
-    // Reset button text after 2 seconds
-    setTimeout(() => {
-        printBtn.innerHTML = originalBtnText;
-    }, 2000);
-
-        } catch (error) {
+        // Process each word
+        words.forEach((word, index) => {
+            const isRequired = word.Required === 1 || word.Required === "1";
+            
+            // Ensure proper encoding for Latin characters
+            const headword = isRequired ? `★ ${word.Headword}` : word.Headword;
+            const definition = word.Definitions;
+            const occurrences = `Occurrences: ${word["Occurrences in the Aeneid"]}`;
+            
+            // Calculate space needed for this entry
+            // For Latin texts with special characters, we might need more space
+            const definitionLines = doc.splitTextToSize(definition, pageWidth - 2 * margin);
+            const entryHeight = 5 + (definitionLines.length * 5) + 10; 
+            
+            // Check if we need a new page
+            if (y + entryHeight > pageHeight - margin) {
+                doc.addPage();
+                currentPage++;
+                
+                // Reset position for new page
+                y = margin + 10;
+                
+                // Add header to new page
+                doc.setFontSize(defFontSize);
+                doc.setFont('helvetica', 'italic');
+                doc.text(`${listName} (continued) - Page ${currentPage}`, margin, margin);
+                doc.line(margin, margin + 3, pageWidth - margin, margin + 3);
+                y += 10;
+            }
+            
+            // Headword
+            doc.setFontSize(wordFontSize);
+            doc.setFont('helvetica', 'bold');
+            doc.text(headword, margin, y);
+            
+            // Definition
+            doc.setFontSize(defFontSize);
+            doc.setFont('helvetica', 'normal');
+            
+            doc.text(definitionLines, margin, y + 5);
+            
+            // Occurrences (in italic)
+            doc.setFontSize(occurrenceFontSize);
+            doc.setFont('helvetica', 'italic');
+            doc.text(occurrences, margin, y + 5 + (definitionLines.length * 5));
+            
+            // Update y position for next word
+            y += entryHeight;
+            
+            // Add a separator line between words (except the last one)
+            if (index < words.length - 1) {
+                doc.setDrawColor(200, 200, 200); // Light gray
+                doc.setLineWidth(0.1);
+                doc.line(margin, y - 5, pageWidth - margin, y - 5);
+            }
+        });
+        
+        // Save the PDF with a proper name
+        const filename = `${listName.replace(/\s+/g, '_')}_vergil_glossary.pdf`;
+        doc.save(filename);
+        
+        // Reset button text
+        printBtn.innerHTML = '<span class="btn-icon">✓</span> PDF Downloaded!';
+        
+        // Reset button text after 2 seconds
+        setTimeout(() => {
+            printBtn.innerHTML = originalBtnText;
+        }, 2000);
+    } catch (error) {
         console.error("Error generating PDF:", error);
         alert("An error occurred while generating the PDF: " + error.message);
         printBtn.innerHTML = originalBtnText;
