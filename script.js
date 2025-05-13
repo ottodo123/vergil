@@ -923,17 +923,46 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
         // Create new PDF document
         const { jsPDF } = window.jspdf;
         
-        // Create document with Unicode support
+        // Create document
         const doc = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: 'a4',
-            putOnlyUsedFonts: true,
-            floatPrecision: 16 // Better precision for better font rendering
+            format: 'a4'
         });
         
-        // For Latin characters, we'll use the default font but ensure encoding is properly set
-        doc.setFont("helvetica", "normal");
+        // Helper function to clean Latin characters with diacritical marks
+        function cleanText(text) {
+            if (!text) return "";
+            
+            // Common Latin replacements - convert long vowels to standard Latin characters
+            return text
+                .replace(/ā/g, 'a')
+                .replace(/ē/g, 'e')
+                .replace(/ī/g, 'i')
+                .replace(/ō/g, 'o')
+                .replace(/ū/g, 'u')
+                .replace(/Ā/g, 'A')
+                .replace(/Ē/g, 'E')
+                .replace(/Ī/g, 'I')
+                .replace(/Ō/g, 'O')
+                .replace(/Ū/g, 'U')
+                // Additional Latin characters - convert short vowels
+                .replace(/ă/g, 'a')
+                .replace(/ĕ/g, 'e')
+                .replace(/ĭ/g, 'i')
+                .replace(/ŏ/g, 'o')
+                .replace(/ŭ/g, 'u')
+                .replace(/Ă/g, 'A')
+                .replace(/Ĕ/g, 'E')
+                .replace(/Ĭ/g, 'I')
+                .replace(/Ŏ/g, 'O')
+                .replace(/Ŭ/g, 'U')
+                // Any other non-ASCII character
+                .replace(/[^\x00-\x7F]/g, function(c) {
+                    // Remove diacritical marks
+                    return c.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                });
+        }
         
         // Set font sizes
         const titleFontSize = 16;
@@ -973,18 +1002,17 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
         words.forEach((word, index) => {
             const isRequired = word.Required === 1 || word.Required === "1";
             
-            // Ensure proper encoding for Latin characters
-            const headword = isRequired ? `★ ${word.Headword}` : word.Headword;
-            const definition = word.Definitions;
+            // Clean text for better PDF compatibility
+            const headword = isRequired ? `★ ${cleanText(word.Headword)}` : cleanText(word.Headword);
+            const definition = cleanText(word.Definitions);
             const occurrences = `Occurrences: ${word["Occurrences in the Aeneid"]}`;
             
             // Calculate space needed for this entry
-            // For Latin texts with special characters, we might need more space
             const definitionLines = doc.splitTextToSize(definition, pageWidth - 2 * margin);
-            const entryHeight = 5 + (definitionLines.length * 5) + 10; 
+            const estimatedHeight = 10 + (definitionLines.length * 5) + 10;
             
             // Check if we need a new page
-            if (y + entryHeight > pageHeight - margin) {
+            if (y + estimatedHeight > pageHeight - margin) {
                 doc.addPage();
                 currentPage++;
                 
@@ -1007,7 +1035,6 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
             // Definition
             doc.setFontSize(defFontSize);
             doc.setFont('helvetica', 'normal');
-            
             doc.text(definitionLines, margin, y + 5);
             
             // Occurrences (in italic)
@@ -1016,7 +1043,7 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
             doc.text(occurrences, margin, y + 5 + (definitionLines.length * 5));
             
             // Update y position for next word
-            y += entryHeight;
+            y += estimatedHeight;
             
             // Add a separator line between words (except the last one)
             if (index < words.length - 1) {
