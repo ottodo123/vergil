@@ -920,18 +920,17 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
         const titleFontSize = 16;
         const wordFontSize = 11;
         const defFontSize = 10;
-        const occurrenceFontSize = 9;
         
         // Page dimensions
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         
-        // Increase margins even more to prevent text going off the edge
+        // Use 1-inch margins (25.4mm = 1 inch)
         const margin = {
-            left: 25,    // Increased from 20
-            right: 25,   // Increased from 20
-            top: 15,
-            bottom: 20   // Increased from 15
+            left: 25.4,   // 1 inch
+            right: 25.4,  // 1 inch
+            top: 25.4,    // 1 inch
+            bottom: 25.4  // 1 inch
         };
         
         // Title
@@ -974,20 +973,19 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
             
             // Clean definition text
             const definition = cleanDefinition(word.Definitions);
-            const occurrences = `Occurrences: ${word["Occurrences in the Aeneid"]}`;
             
-            // Calculate available width for text - reduced width to ensure proper margins
-            const textWidth = pageWidth - margin.left - margin.right - 10; // Extra 10mm buffer
+            // Calculate available width for text with exact 1-inch margins
+            const textWidth = pageWidth - margin.left - margin.right;
             
             // Split definition into multiple lines with proper width constraint
             const definitionLines = doc.splitTextToSize(definition, textWidth);
             
-            // Calculate total height needed for this entry
+            // Calculate total height needed for this entry (without occurrences line)
             const lineHeight = 5;
             const definitionHeight = definitionLines.length * lineHeight;
-            const estimatedHeight = 10 + definitionHeight + 10;
+            const estimatedHeight = 10 + definitionHeight + 5; // Reduced since we removed occurrences
             
-            // Check if we need a new page - leave more space at bottom margin
+            // Check if we need a new page - leave adequate space at bottom margin
             if (y + estimatedHeight > pageHeight - margin.bottom) {
                 doc.addPage();
                 currentPage++;
@@ -1013,19 +1011,14 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
             doc.setFont('helvetica', 'normal');
             doc.text(definitionLines, margin.left, y + 5);
             
-            // Occurrences (in italic)
-            doc.setFontSize(occurrenceFontSize);
-            doc.setFont('helvetica', 'italic');
-            doc.text(occurrences, margin.left, y + 5 + definitionHeight);
-            
-            // Update y position for next word - add more space between entries
-            y += 5 + definitionHeight + 15;
+            // Update y position for next word
+            y += 5 + definitionHeight + 10;
             
             // Add a separator line between words (except the last one)
             if (index < words.length - 1) {
                 doc.setDrawColor(200, 200, 200); // Light gray
                 doc.setLineWidth(0.1);
-                doc.line(margin.left, y - 7, pageWidth - margin.right, y - 7);
+                doc.line(margin.left, y - 5, pageWidth - margin.right, y - 5);
             }
         });
         
