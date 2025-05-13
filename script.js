@@ -930,40 +930,6 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
             format: 'a4'
         });
         
-        // Helper function to clean Latin characters with diacritical marks
-        function cleanText(text) {
-            if (!text) return "";
-            
-            // Common Latin replacements - convert long vowels to standard Latin characters
-            return text
-                .replace(/ā/g, 'a')
-                .replace(/ē/g, 'e')
-                .replace(/ī/g, 'i')
-                .replace(/ō/g, 'o')
-                .replace(/ū/g, 'u')
-                .replace(/Ā/g, 'A')
-                .replace(/Ē/g, 'E')
-                .replace(/Ī/g, 'I')
-                .replace(/Ō/g, 'O')
-                .replace(/Ū/g, 'U')
-                // Additional Latin characters - convert short vowels
-                .replace(/ă/g, 'a')
-                .replace(/ĕ/g, 'e')
-                .replace(/ĭ/g, 'i')
-                .replace(/ŏ/g, 'o')
-                .replace(/ŭ/g, 'u')
-                .replace(/Ă/g, 'A')
-                .replace(/Ĕ/g, 'E')
-                .replace(/Ĭ/g, 'I')
-                .replace(/Ŏ/g, 'O')
-                .replace(/Ŭ/g, 'U')
-                // Any other non-ASCII character
-                .replace(/[^\x00-\x7F]/g, function(c) {
-                    // Remove diacritical marks
-                    return c.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                });
-        }
-        
         // Set font sizes
         const titleFontSize = 16;
         const wordFontSize = 11;
@@ -1002,9 +968,10 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
         words.forEach((word, index) => {
             const isRequired = word.Required === 1 || word.Required === "1";
             
-            // Clean text for better PDF compatibility
-            const headword = isRequired ? `★ ${cleanText(word.Headword)}` : cleanText(word.Headword);
-            const definition = cleanText(word.Definitions);
+            // Use Headword_Data instead of Headword - this field should not have diacritical marks
+            const headwordText = word.Headword_Data || word.Headword;
+            const headword = isRequired ? `★ ${headwordText}` : headwordText;
+            const definition = word.Definitions;
             const occurrences = `Occurrences: ${word["Occurrences in the Aeneid"]}`;
             
             // Calculate space needed for this entry
