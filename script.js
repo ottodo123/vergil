@@ -891,15 +891,39 @@ function printList(listName) {
     const originalText = printBtn.innerHTML;
     printBtn.innerHTML = '<span class="btn-icon">⏳</span> Preparing PDF...';
     
-    // Debug the jsPDF library availability
-    console.log("jsPDF availability check:", typeof window.jspdf);
+    // Debug the jsPDF library availability - log more details
+    console.log("jsPDF availability check:", 
+                "window.jspdf =", typeof window.jspdf, 
+                "jsPDF direct =", typeof jsPDF);
     
-    if (typeof window.jspdf === 'undefined') {
-        alert("PDF library not loaded. Please refresh the page and try again.");
-        printBtn.innerHTML = originalText;
-        return; // Exit early if jsPDF is not available
-    } else {
+    // Try to load jsPDF synchronously first
+    try {
         generatePDF(listName, words, printBtn, originalText);
+    } catch (error) {
+        console.error("Error in initial PDF generation attempt:", error);
+        
+        // If failed, try loading the library again
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        
+        script.onload = function() {
+            console.log("jsPDF loaded via script tag, retrying...");
+            try {
+                generatePDF(listName, words, printBtn, originalText);
+            } catch (retryError) {
+                console.error("Error in retry PDF generation:", retryError);
+                alert("Failed to generate PDF. Please try again or refresh the page.");
+                printBtn.innerHTML = originalText;
+            }
+        };
+        
+        script.onerror = function(e) {
+            console.error("Failed to load jsPDF script:", e);
+            alert("Failed to load PDF generation library. Please try again later or check your internet connection.");
+            printBtn.innerHTML = originalText;
+        };
+        
+        document.head.appendChild(script);
     }
 }
 

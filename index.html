@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vergil Glossary</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Import jsPDF for PDF generation -->
+    <!-- Import jsPDF for PDF generation BEFORE any other scripts -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <header>
@@ -92,6 +92,22 @@
             <p>© 2025 Vergil Glossary. All rights reserved.</p>
         </div>
     </div>
+
+    <!-- Before importing other scripts, add code to ensure jsPDF is available globally -->
+    <script>
+        // Add this to ensure jsPDF is available globally
+        console.log("Initial jsPDF check:", typeof window.jspdf);
+        
+        // Create a global reference if needed
+        if (typeof window.jspdf === 'undefined' && typeof jsPDF !== 'undefined') {
+            window.jspdf = { jsPDF: jsPDF };
+            console.log("Created global reference to jsPDF");
+        } else if (typeof window.jspdf !== 'undefined') {
+            console.log("jsPDF is already available at page load");
+        } else {
+            console.warn("jsPDF not found. Will attempt to load it again.");
+        }
+    </script>
 
     <!-- Import PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
