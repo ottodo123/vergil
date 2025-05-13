@@ -891,8 +891,8 @@ function printList(listName) {
     const originalText = printBtn.innerHTML;
     printBtn.innerHTML = '<span class="btn-icon">⏳</span> Preparing PDF...';
     
-    // Import jsPDF library if not already loaded
-    if (typeof jsPDF === 'undefined') {
+    // Import jsPDF library if not already loaded - FIXED LINE
+    if (typeof window.jspdf === 'undefined') {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
         script.onload = function() {
@@ -906,13 +906,15 @@ function printList(listName) {
 
 // Helper function to generate PDF
 function generatePDF(listName, words, printBtn, originalBtnText) {
-    // Create new PDF document
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-    });
+    try {
+        // Create new PDF document
+        const { jsPDF } = window.jspdf;
+        
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
     
     // Set font sizes
     const titleFontSize = 16;
@@ -1014,6 +1016,12 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
     setTimeout(() => {
         printBtn.innerHTML = originalBtnText;
     }, 2000);
+
+        } catch (error) {
+        console.error("Error generating PDF:", error);
+        alert("An error occurred while generating the PDF: " + error.message);
+        printBtn.innerHTML = originalBtnText;
+    }
 }
 
 // Add this to the document load event to make sure jsPDF is available
