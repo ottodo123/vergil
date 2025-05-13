@@ -920,14 +920,14 @@ function printList(listName) {
 // Helper function to generate PDF
 function generatePDF(listName, words, printBtn, originalBtnText) {
     try {
-        // Create new PDF document
+        // Create new PDF document - use letter size instead of A4
         const { jsPDF } = window.jspdf;
         
-        // Create document
+        // Create document with letter size
         const doc = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: 'a4'
+            format: 'letter'  // Changed from 'a4' to 'letter'
         });
         
         // Set font sizes
@@ -939,84 +939,98 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
         // Page dimensions
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-        const margin = 15;
+        
+        // Increase margins to prevent text going off the edge
+        const margin = {
+            left: 20,    // Increased from 15
+            right: 20,   // Increased from 15
+            top: 15,
+            bottom: 15
+        };
         
         // Title
         doc.setFontSize(titleFontSize);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${listName} - Vergil Glossary`, margin, margin);
+        doc.text(`${listName} - Vergil Glossary`, margin.left, margin.top);
         
         // Word count
         doc.setFontSize(defFontSize);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Total words: ${words.length}`, margin, margin + 7);
+        doc.text(`Total words: ${words.length}`, margin.left, margin.top + 7);
         
         // Date
         const today = new Date();
         const dateStr = today.toLocaleDateString();
-        doc.text(`Generated: ${dateStr}`, pageWidth - margin - 40, margin + 7);
+        doc.text(`Generated: ${dateStr}`, pageWidth - margin.right - 40, margin.top + 7);
         
         // Draw a line
         doc.setLineWidth(0.3);
-        doc.line(margin, margin + 10, pageWidth - margin, margin + 10);
+        doc.line(margin.left, margin.top + 10, pageWidth - margin.right, margin.top + 10);
         
         // Start position for words
-        let y = margin + 20;
+        let y = margin.top + 20;
         let currentPage = 1;
         
         // Process each word
         words.forEach((word, index) => {
             const isRequired = word.Required === 1 || word.Required === "1";
             
-            // Use Headword_Data instead of Headword - this field should not have diacritical marks
+            // Use Headword_Data instead of Headword
             const headwordText = word.Headword_Data || word.Headword;
             const headword = isRequired ? `★ ${headwordText}` : headwordText;
             const definition = word.Definitions;
             const occurrences = `Occurrences: ${word["Occurrences in the Aeneid"]}`;
             
-            // Calculate space needed for this entry
-            const definitionLines = doc.splitTextToSize(definition, pageWidth - 2 * margin);
-            const estimatedHeight = 10 + (definitionLines.length * 5) + 10;
+            // Calculate available width for text - use the margins correctly
+            const textWidth = pageWidth - margin.left - margin.right;
             
-            // Check if we need a new page
-            if (y + estimatedHeight > pageHeight - margin) {
+            // Split definition into multiple lines with proper width constraint
+            const definitionLines = doc.splitTextToSize(definition, textWidth);
+            
+            // Calculate total height needed for this entry
+            const lineHeight = 5;
+            const definitionHeight = definitionLines.length * lineHeight;
+            const estimatedHeight = 10 + definitionHeight + 10;
+            
+            // Check if we need a new page - leave more space at bottom margin
+            if (y + estimatedHeight > pageHeight - margin.bottom) {
                 doc.addPage();
                 currentPage++;
                 
                 // Reset position for new page
-                y = margin + 10;
+                y = margin.top + 10;
                 
                 // Add header to new page
                 doc.setFontSize(defFontSize);
                 doc.setFont('helvetica', 'italic');
-                doc.text(`${listName} (continued) - Page ${currentPage}`, margin, margin);
-                doc.line(margin, margin + 3, pageWidth - margin, margin + 3);
+                doc.text(`${listName} (continued) - Page ${currentPage}`, margin.left, margin.top);
+                doc.line(margin.left, margin.top + 3, pageWidth - margin.right, margin.top + 3);
                 y += 10;
             }
             
             // Headword
             doc.setFontSize(wordFontSize);
             doc.setFont('helvetica', 'bold');
-            doc.text(headword, margin, y);
+            doc.text(headword, margin.left, y);
             
             // Definition
             doc.setFontSize(defFontSize);
             doc.setFont('helvetica', 'normal');
-            doc.text(definitionLines, margin, y + 5);
+            doc.text(definitionLines, margin.left, y + 5);
             
             // Occurrences (in italic)
             doc.setFontSize(occurrenceFontSize);
             doc.setFont('helvetica', 'italic');
-            doc.text(occurrences, margin, y + 5 + (definitionLines.length * 5));
+            doc.text(occurrences, margin.left, y + 5 + definitionHeight);
             
-            // Update y position for next word
-            y += estimatedHeight;
+            // Update y position for next word - add more space between entries
+            y += 5 + definitionHeight + 15;
             
             // Add a separator line between words (except the last one)
             if (index < words.length - 1) {
                 doc.setDrawColor(200, 200, 200); // Light gray
                 doc.setLineWidth(0.1);
-                doc.line(margin, y - 5, pageWidth - margin, y - 5);
+                doc.line(margin.left, y - 7, pageWidth - margin.right, y - 7);
             }
         });
         
