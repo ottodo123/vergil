@@ -930,15 +930,44 @@ function printList(listName) {
 // Helper function to generate PDF
 function generatePDF(listName, words, printBtn, originalBtnText) {
     try {
-        // Create new PDF document - use letter size
-        const { jsPDF } = window.jspdf;
+        // Check what's available in the global scope
+        console.log("jsPDF availability check:", 
+                   "window.jspdf =", typeof window.jspdf, 
+                   "window.jspdf.jsPDF =", window.jspdf ? typeof window.jspdf.jsPDF : "N/A",
+                   "jsPDF direct =", typeof jsPDF);
         
-        // Create document with letter size
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'letter'
-        });
+        let doc;
+        
+        // Try different ways to access jsPDF
+        if (typeof window.jspdf !== 'undefined' && typeof window.jspdf.jsPDF === 'function') {
+            // Use window.jspdf.jsPDF if available (our preferred setup)
+            const { jsPDF } = window.jspdf;
+            doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'letter'
+            });
+        } else if (typeof jsPDF === 'function') {
+            // Direct global jsPDF
+            doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'letter'
+            });
+        } else if (typeof window.jsPDF === 'function') {
+            // Try window.jsPDF
+            doc = new window.jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'letter'
+            });
+        } else {
+            throw new Error("jsPDF not found in any expected location. Make sure it's properly loaded.");
+        }
+        
+        console.log("PDF document created successfully");
+        
+        // Rest of your function remains the same - no changes needed below this comment
         
         // Set font sizes
         const titleFontSize = 16;

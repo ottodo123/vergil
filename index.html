@@ -98,15 +98,43 @@
         // Add this to ensure jsPDF is available globally
         console.log("Initial jsPDF check:", typeof window.jspdf);
         
-        // Create a global reference if needed
-        if (typeof window.jspdf === 'undefined' && typeof jsPDF !== 'undefined') {
-            window.jspdf = { jsPDF: jsPDF };
-            console.log("Created global reference to jsPDF");
-        } else if (typeof window.jspdf !== 'undefined') {
-            console.log("jsPDF is already available at page load");
-        } else {
-            console.warn("jsPDF not found. Will attempt to load it again.");
-        }
+        // Try to find jsPDF in any form it might be available
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOMContentLoaded jsPDF check:", 
+                    "window.jspdf =", typeof window.jspdf,
+                    "jsPDF direct =", typeof jsPDF);
+            
+            // Create a global reference if needed
+            if (typeof window.jspdf === 'undefined') {
+                if (typeof jsPDF !== 'undefined') {
+                    // If jsPDF is available globally but not on window.jspdf
+                    window.jspdf = { jsPDF: jsPDF };
+                    console.log("Created global reference to jsPDF from global var");
+                } else if (typeof window.jsPDF !== 'undefined') {
+                    // If jsPDF is on window but not in our expected structure
+                    window.jspdf = { jsPDF: window.jsPDF };
+                    console.log("Created global reference to jsPDF from window.jsPDF");
+                }
+            } else {
+                console.log("jsPDF is already available at window.jspdf");
+            }
+        });
+        
+        // Force reload jsPDF if not found
+        window.addEventListener('load', function() {
+            if (typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined' && typeof window.jsPDF === 'undefined') {
+                console.warn("jsPDF not found at load time. Will attempt to load it again.");
+                var script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                script.onload = function() {
+                    console.log("jsPDF loaded successfully via dynamic script");
+                    if (typeof jsPDF !== 'undefined') {
+                        window.jspdf = { jsPDF: jsPDF };
+                    }
+                };
+                document.head.appendChild(script);
+            }
+        });
     </script>
 
     <!-- Import PapaParse for CSV parsing -->
