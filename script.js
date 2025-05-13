@@ -891,15 +891,28 @@ function printList(listName) {
     const originalText = printBtn.innerHTML;
     printBtn.innerHTML = '<span class="btn-icon">⏳</span> Preparing PDF...';
     
-    // Import jsPDF library if not already loaded - FIXED LINE
+    // Debug the jsPDF library availability
+    console.log("jsPDF availability check:", 
+                "window.jspdf =", typeof window.jspdf, 
+                "jsPDF =", typeof jsPDF);
+    
+    // FIXED: Check for window.jspdf (lowercase) not jsPDF
     if (typeof window.jspdf === 'undefined') {
+        console.log("jsPDF not found, loading it now...");
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
         script.onload = function() {
+            console.log("jsPDF loaded via script tag");
             generatePDF(listName, words, printBtn, originalText);
+        };
+        script.onerror = function(e) {
+            console.error("Failed to load jsPDF:", e);
+            alert("Failed to load PDF generation library");
+            printBtn.innerHTML = originalText;
         };
         document.head.appendChild(script);
     } else {
+        console.log("jsPDF already loaded, generating PDF...");
         generatePDF(listName, words, printBtn, originalText);
     }
 }
@@ -1026,8 +1039,8 @@ function generatePDF(listName, words, printBtn, originalBtnText) {
 
 // Add this to the document load event to make sure jsPDF is available
 document.addEventListener('DOMContentLoaded', function() {
-    // Load jsPDF library at startup
-    if (typeof jsPDF === 'undefined') {
+    // Load jsPDF library at startup - FIXED: Check for window.jspdf not jsPDF
+    if (typeof window.jspdf === 'undefined') {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
         document.head.appendChild(script);
