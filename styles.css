@@ -416,6 +416,33 @@ margin-left:20vw;
     padding: 5px;
 }
 
+.firebase-auth-container {
+    margin-bottom: 10px;
+}
+
+.google-sign-in-btn {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: white;
+    color: #444;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.google-sign-in-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.google-icon {
+    margin-right: 8px;
+    font-weight: bold;
+    color: #4285F4;
+}
+
 /* Print-specific styling that will be included in the PDF */
 @media print {
     body {

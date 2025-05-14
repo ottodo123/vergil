@@ -8,9 +8,10 @@
     <!-- Import jsPDF for PDF generation BEFORE any other scripts -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- Add Google API libraries -->
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <header>
@@ -30,21 +31,11 @@
                 <button class="search-btn" id="search-btn">Search</button>
             </div>
             <div class="user-actions">
-                <!-- Google Sign-In Integration -->
-                <div id="g_id_onload"
-                     data-client_id="490034991238-p0cp8dchjdl14pk0su5gh79eruipkpdk.apps.googleusercontent.com"
-                     data-context="signin"
-                    data-ux_mode="popup"
-                    data-callback="handleCredentialResponse"
-                    data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin"
-                    data-type="standard"
-                    data-shape="rectangular"
-                    data-theme="outline"
-                    data-text="sign_in_with"
-                    data-size="large"
-                    data-logo_alignment="left">
+                <!-- Firebase 로그인 컨테이너 -->
+                <div class="firebase-auth-container">
+                    <button id="google-sign-in" class="google-sign-in-btn">
+                        <span class="google-icon">G</span> Sign in with Google
+                    </button>
                 </div>
                 <button class="saved-lists-btn" id="saved-lists-btn">Saved Lists</button>
             </div>

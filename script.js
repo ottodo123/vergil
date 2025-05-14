@@ -5,238 +5,9 @@ let saveLists = {
 };
 let currentListName = "Default List";
 let googleAuth = null;
-
-// NEW: Add these Google Drive API variables
-let gapiInitialized = false;
-let userFileId = null;
-const GOOGLE_CLIENT_ID = '490034991238-p0cp8dchjdl14pk0su5gh79eruipkpdk.apps.googleusercontent.com'; // Your client ID
-const GOOGLE_API_KEY = 'blank1'; // Replace with your API key from Google Cloud Console
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
-
-// NEW: Add these Google Drive API initialization functions
-// 1. Initialize the Google API client
-function initializeGoogleAPI() {
-  if (gapiInitialized) return Promise.resolve();
-  
-  return new Promise((resolve, reject) => {
-    gapi.load('client', async () => {
-      try {
-        await gapi.client.init({
-          apiKey: GOOGLE_API_KEY,
-          discoveryDocs: [DISCOVERY_DOC],
-        });
-        gapiInitialized = true;
-        console.log('Google API client initialized');
-        resolve();
-      } catch (error) {
-        console.error('Error initializing Google API client:', error);
-        reject(error);
-      }
-    });
-  });
-}
-
-// 2. Function to get access token from Google auth
-async function getAccessToken() {
-  // Get the ID token from localStorage
-  const idToken = localStorage.getItem('googleToken');
-  if (!idToken) {
-    throw new Error('User not signed in');
-  }
-  
-  // Exchange the ID token for access token
-  return new Promise((resolve, reject) => {
-    // Use the tokenClient to get an access token
-    google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: SCOPES,
-      callback: (tokenResponse) => {
-        if (tokenResponse.error) {
-          reject(tokenResponse);
-        } else {
-          resolve(tokenResponse.access_token);
-        }
-      },
-    }).requestAccessToken();
-  });
-}
-
-// 3. Function to find existing data file in user's appdata folder
-async function findUserDataFile() {
-  try {
-    // Initialize Google API if needed
-    await initializeGoogleAPI();
-    
-    // Set the access token
-    const accessToken = await getAccessToken();
-    gapi.client.setToken({ access_token: accessToken });
-    
-    // Search for the file
-    const response = await gapi.client.drive.files.list({
-      spaces: 'appDataFolder',
-      fields: 'files(id, name)',
-      q: "name='vergil_glossary_data.json'"
-    });
-    
-    const files = response.result.files;
-    if (files && files.length > 0) {
-      userFileId = files[0].id;
-      console.log('Found user data file:', userFileId);
-      return userFileId;
-    } else {
-      console.log('No user data file found');
-      return null;
-    }
-  } catch (error) {
-    console.error('Error finding user data file:', error);
-    return null;
-  }
-}
-
-// 4. Function to load user data from Google Drive
-async function loadUserDataFromDrive() {
-  try {
-    // Initialize Google API
-    await initializeGoogleAPI();
-    
-    // Find user data file
-    const fileId = await findUserDataFile();
-    if (!fileId) {
-      console.log('No user data file to load');
-      return false;
-    }
-    
-    // Set the access token
-    const accessToken = await getAccessToken();
-    gapi.client.setToken({ access_token: accessToken });
-    
-    // Get file content
-    const response = await gapi.client.drive.files.get({
-      fileId: fileId,
-      alt: 'media'
-    });
-    
-    // Parse the data
-    const userData = JSON.parse(response.body);
-    console.log('Loaded user data from Drive:', userData);
-    
-    if (userData) {
-      // Update local data
-      saveLists = userData;
-      
-      // Update UI
-      displayVocabularyItems(vocabularyData);
-      if (document.getElementById('saved-lists-page').style.display !== 'none') {
-        updateSaveListTabs();
-      }
-      
-      // Also update localStorage as backup
-      localStorage.setItem('saveLists', JSON.stringify(saveLists));
-      
-      return true;
-    }
-    
-    return false;
-  } catch (error) {
-    console.error('Error loading user data from Drive:', error);
-    return false;
-  }
-}
-
-// 5. Function to save user data to Google Drive
-async function saveUserDataToDrive() {
-  try {
-    // Save to localStorage as backup
-    localStorage.setItem('saveLists', JSON.stringify(saveLists));
-    
-    // Check if user is signed in
-    const token = localStorage.getItem('googleToken');
-    if (!token) {
-      console.log('User not signed in, skipping Drive save');
-      return false;
-    }
-    
-    // Initialize Google API
-    await initializeGoogleAPI();
-    
-    // Set the access token
-    const accessToken = await getAccessToken();
-    gapi.client.setToken({ access_token: accessToken });
-    
-    // Prepare file metadata and content
-    const fileMetadata = {
-      name: 'vergil_glossary_data.json',
-      mimeType: 'application/json'
-    };
-    
-    // Check if we need to create or update the file
-    let fileId = await findUserDataFile();
-    
-    if (fileId) {
-      // Update existing file
-      console.log('Updating existing file:', fileId);
-      const response = await gapi.client.request({
-        path: `/upload/drive/v3/files/${fileId}`,
-        method: 'PATCH',
-        params: {
-          uploadType: 'media'
-        },
-        body: JSON.stringify(saveLists)
-      });
-      console.log('File updated successfully:', response);
-    } else {
-      // Create new file in appDataFolder
-      console.log('Creating new file in appDataFolder');
-      fileMetadata.parents = ['appDataFolder'];
-      
-      const response = await gapi.client.request({
-        path: '/upload/drive/v3/files',
-        method: 'POST',
-        params: {
-          uploadType: 'multipart'
-        },
-        headers: {
-          'Content-Type': 'multipart/related; boundary=foo'
-        },
-        body: '--foo\n' +
-              'Content-Type: application/json\n\n' +
-              JSON.stringify(fileMetadata) +
-              '\n\n' +
-              '--foo\n' +
-              'Content-Type: application/json\n\n' +
-              JSON.stringify(saveLists) +
-              '\n\n' +
-              '--foo--'
-      });
-      
-      userFileId = response.result.id;
-      console.log('File created successfully:', userFileId);
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error saving user data to Drive:', error);
-    return false;
-  }
-}
-
-// 6. Add a unified function to save data
-function saveListsToStorage() {
-  // Always save to localStorage as backup
-  localStorage.setItem('saveLists', JSON.stringify(saveLists));
-  
-  // Try to save to Google Drive
-  if (localStorage.getItem('googleToken')) {
-    saveUserDataToDrive().catch(error => {
-      console.error('Error in Drive save:', error);
-    });
-  }
-}
-
-
-
-
+let auth = null;
+let db = null;
+let currentUser = null;
 // DOM elements
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
@@ -283,84 +54,100 @@ document.addEventListener('DOMContentLoaded', () => {
         performSearch();
     }
     
-    // 로그인 상태 확인 및 초기화
+   // Firebase 초기화
+    initializeFirebase();
+        
+    // 로그인 상태 확인
     checkLoginState();
-    
-    // Google API 초기화
-    if (typeof google !== 'undefined' && google.accounts) {
-        initGoogleSignIn();
-    } else {
-        // Google API 스크립트가 아직 로드되지 않은 경우
-        window.onGoogleLibraryLoad = initGoogleSignIn;
+
+    // 구글 로그인 버튼 이벤트 리스너 설정
+    const googleSignInBtn = document.getElementById('google-sign-in');
+    if (googleSignInBtn) {
+        googleSignInBtn.addEventListener('click', handleGoogleSignIn);
     }
 });
 
-// Google Sign-In 초기화 함수
-function initGoogleSignIn() {
-    // Google 클라이언트 ID 설정
-    const CLIENT_ID = '490034991238-p0cp8dchjdl14pk0su5gh79eruipkpdk.apps.googleusercontent.com';
+// Firebase 초기화 함수
+function initializeFirebase() {
+    // Firebase 설정 (Firebase 콘솔에서 가져온 값으로 변경해야 함)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAmZrFMnXgBipBNgNFCMOASxfNmOY1VWJw",
+        authDomain: "vergil-4e5ca.firebaseapp.com",
+        projectId: "vergil-4e5ca",
+        storageBucket: "vergil-4e5ca.firebasestorage.app",
+        messagingSenderId: "135292455436",
+        appId: "1:135292455436:web:1d28a0c00fa6f88c173c29",
+        measurementId: "G-63XNPHWS3E"
+    };
+
+    // Firebase 초기화
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
     
-    if (typeof google !== 'undefined' && google.accounts) {
-        google.accounts.id.initialize({
-            client_id: CLIENT_ID,
-            callback: handleCredentialResponse,
-            auto_select: false
-        });
-    }
+    // 인증 상태 변경 리스너
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // 사용자가 로그인한 경우
+            currentUser = user;
+            localStorage.setItem('userName', user.displayName || user.email);
+            localStorage.setItem('userEmail', user.email);
+            
+            // UI 업데이트
+            updateLoginUI(user.displayName || user.email);
+            
+            // Firebase에서 사용자 데이터 로드
+            loadUserDataFromFirebase(user.uid);
+        } else {
+            // 로그아웃 상태
+            currentUser = null;
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userEmail');
+            
+            // UI 업데이트 - 로그인 버튼 표시 등
+            const userActions = document.querySelector('.user-actions');
+            if (userActions) {
+                // 로그인 버튼 외 요소 제거
+                while (userActions.firstChild) {
+                    if (userActions.firstChild.className !== 'saved-lists-btn' && 
+                        !userActions.firstChild.classList.contains('firebase-auth-container')) {
+                        userActions.removeChild(userActions.firstChild);
+                    } else if (userActions.firstChild.classList.contains('firebase-auth-container')) {
+                        userActions.firstChild.style.display = 'block';
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    });
 }
-// handleCredentialResponse function
-window.handleCredentialResponse = function(response) {
-    console.log("Google Sign-In response:", response);
-    
-    if (response && response.credential) {
-      const token = response.credential;
-      console.log("ID Token:", token);
-      
-      try {
-        // Store token in localStorage
-        localStorage.setItem('googleToken', token);
-        
-        // Extract user information from the token
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log("User info:", payload);
-        
-        const userName = payload.name;
-        const userEmail = payload.email;
-        
-        // Save user info to localStorage
-        localStorage.setItem('userName', userName);
-        localStorage.setItem('userEmail', userEmail);
-        
-        // Update UI to show logged in state
-        updateLoginUI(userName);
-        
-        // Try to load user data from Drive
-        loadUserDataFromDrive().then(success => {
-          if (!success) {
-            // If no Drive data, we'll use local data and upload it on next save
-            console.log('No data found in Drive, will upload local data on next save');
-          }
-        }).catch(error => {
-          console.error('Error in initial Drive sync:', error);
+
+// Google 로그인 함수
+function handleGoogleSignIn() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            // 로그인 성공
+            const user = result.user;
+            console.log("로그인 성공:", user.displayName);
+        })
+        .catch((error) => {
+            console.error("Google 로그인 오류:", error);
+            alert("로그인 중 오류가 발생했습니다: " + error.message);
         });
-        
-      } catch (error) {
-        console.error("Token processing error:", error);
-      }
-    } else {
-      console.error("Response contains no credential:", response);
-    }
-  };
+}
 
 // 로그인 UI 업데이트 함수
 function updateLoginUI(userName) {
-    // Google Sign-In 버튼 숨기기
-    const googleSignInButton = document.querySelector('.g_id_signin');
-    if (googleSignInButton) {
-        googleSignInButton.style.display = 'none';
+    // Firebase 로그인 컨테이너 숨기기
+    const firebaseAuthContainer = document.querySelector('.firebase-auth-container');
+    if (firebaseAuthContainer) {
+        firebaseAuthContainer.style.display = 'none';
     }
     
-    // 사용자 정보와 로그아웃/계정 전환 버튼 표시
+    // 사용자 정보와 로그아웃 버튼 표시
     const userActions = document.querySelector('.user-actions');
     if (userActions) {
         // 사용자 정보 표시
@@ -378,16 +165,10 @@ function updateLoginUI(userName) {
         logoutBtn.className = 'logout-btn';
         logoutBtn.textContent = 'Logout';
         logoutBtn.addEventListener('click', handleLogout);
-
         
-        // 기존 요소 제거
-        while (userActions.firstChild) {
-            if (userActions.firstChild.className !== 'saved-lists-btn') {
-                userActions.removeChild(userActions.firstChild);
-            } else {
-                break;  // Saved Lists 버튼은 유지
-            }
-        }
+        // 기존 로그인 관련 요소 제거
+        const elementsToRemove = userActions.querySelectorAll(':not(.saved-lists-btn):not(.firebase-auth-container)');
+        elementsToRemove.forEach(element => element.remove());
         
         // 새 요소 추가
         userActions.insertBefore(logoutBtn, userActions.firstChild);
@@ -397,60 +178,94 @@ function updateLoginUI(userName) {
 
 // 로그아웃 처리 함수
 function handleLogout() {
-    // 로컬 스토리지에서 토큰 및 사용자 정보 제거
-    localStorage.removeItem('googleToken');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    
-    // 구글 자동 로그인 비활성화
-    if (typeof google !== 'undefined' && google.accounts) {
-        google.accounts.id.disableAutoSelect();
-    }
-    
-    // 페이지 새로고침
-    window.location.reload();
-}
-
-// 계정 전환 함수
-function switchAccount() {
-    // 기존 계정 로그아웃 처리
-    localStorage.removeItem('googleToken');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    
-    // 구글 계정 선택 팝업 표시
-    if (typeof google !== 'undefined' && google.accounts) {
-        google.accounts.id.prompt();
-    }
+    auth.signOut()
+        .then(() => {
+            console.log("로그아웃 성공");
+            // 페이지 새로고침
+            window.location.reload();
+        })
+        .catch((error) => {
+            console.error("로그아웃 오류:", error);
+            alert("로그아웃 중 오류가 발생했습니다: " + error.message);
+        });
 }
 
 // 로그인 상태 확인 함수
 function checkLoginState() {
-    const token = localStorage.getItem('googleToken');
+    // Firebase auth.onAuthStateChanged 리스너가 이미 처리해줌
+    // 이 함수는 처음 페이지 로드 시 호출되며, 로컬 스토리지 정보로 UI를 초기화
     const userName = localStorage.getItem('userName');
     
-    if (token && userName) {
-        try {
-            // 토큰 디코딩
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            
-            // 토큰 만료 확인
-            const currentTime = Math.floor(Date.now() / 1000);
-            if (payload.exp > currentTime) {
-                // 유효한 토큰이면 UI 업데이트
-                updateLoginUI(userName);
-            } else {
-                // 만료된 토큰 제거
-                localStorage.removeItem('googleToken');
-                localStorage.removeItem('userName');
-                localStorage.removeItem('userEmail');
+    if (userName) {
+        updateLoginUI(userName);
+    }
+}
+
+// Firebase에서 사용자 데이터 로드
+async function loadUserDataFromFirebase(userId) {
+    try {
+        const docRef = db.collection("userData").doc(userId);
+        const docSnap = await docRef.get();
+        
+        if (docSnap.exists) {
+            // 데이터가 있으면 로드
+            const userData = docSnap.data().saveLists;
+            if (userData) {
+                saveLists = userData;
+                
+                // UI 업데이트
+                displayVocabularyItems(vocabularyData);
+                if (document.getElementById('saved-lists-page').style.display !== 'none') {
+                    updateSaveListTabs();
+                }
+                
+                // 로컬 스토리지에도 백업
+                localStorage.setItem('saveLists', JSON.stringify(saveLists));
+                
+                console.log("Firebase에서 데이터 로드 완료");
+                return true;
             }
-        } catch (e) {
-            console.error("토큰 처리 오류:", e);
-            localStorage.removeItem('googleToken');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userEmail');
+        } else {
+            console.log("Firebase에 저장된 데이터가 없습니다");
+            
+            // 로컬 데이터를 Firebase에 저장
+            const localData = localStorage.getItem('saveLists');
+            if (localData) {
+                saveLists = JSON.parse(localData);
+                saveUserDataToFirebase(userId);
+            }
+            
+            return false;
         }
+    } catch (error) {
+        console.error("Firebase 데이터 로드 오류:", error);
+        return false;
+    }
+}
+
+// Firebase에 사용자 데이터 저장
+async function saveUserDataToFirebase(userId) {
+    try {
+        // 로컬 스토리지 백업
+        localStorage.setItem('saveLists', JSON.stringify(saveLists));
+        
+        // 사용자가 로그인되어 있지 않으면 저장하지 않음
+        if (!auth.currentUser) {
+            console.log("로그인되지 않아 Firebase 저장을 건너뜁니다");
+            return false;
+        }
+        
+        // Firestore에 데이터 저장
+        await db.collection("userData").doc(userId).set({
+            saveLists: saveLists,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log("Firebase에 데이터 저장 완료");
+        return true;
+    } catch (error) {
+        console.error("Firebase 데이터 저장 오류:", error);
+        return false;
     }
 }
 
@@ -616,6 +431,16 @@ function updateURL(params) {
     window.history.pushState({}, '', url);
 }
 
+// 데이터 저장 통합 함수
+function saveListsToStorage() {
+    // 항상 로컬 스토리지에 백업
+    localStorage.setItem('saveLists', JSON.stringify(saveLists));
+    
+    // 로그인 상태면 Firebase에도 저장
+    if (auth && auth.currentUser) {
+        saveUserDataToFirebase(auth.currentUser.uid);
+    }
+}
 
 // Display vocabulary items
 function displayVocabularyItems(items) {
@@ -1040,31 +865,19 @@ window.addEventListener('popstate', function() {
 });
 
 // Load saved lists from Google Drive
+// 저장된 리스트 불러오기
 async function loadSavedLists() {
-    // First check localStorage as a fast initial load
+    // 로컬 스토리지에서 먼저 불러오기
     const storedLists = localStorage.getItem('saveLists');
     if (storedLists) {
-      saveLists = JSON.parse(storedLists);
+        saveLists = JSON.parse(storedLists);
     } else {
-      // Initialize with Default List
-      saveLists = { "Default List": [] };
+        // Default List로 초기화
+        saveLists = { "Default List": [] };
     }
     
-    // If user is logged in, try to load from Drive
-    if (localStorage.getItem('googleToken')) {
-      try {
-        // This will update the UI if successful
-        await loadUserDataFromDrive();
-      } catch (error) {
-        console.error('Error loading from Drive:', error);
-      }
-    }
-  }
-
-// Sign In button event (to be implemented later)
-signInBtn.addEventListener('click', () => {
-    alert('Sign In feature is coming soon.');
-});
+    // 로그인 상태면 Firebase에서 불러오기는 onAuthStateChanged에서 처리됨
+}
 
 // Error handling for missing CSV file
 window.addEventListener('error', function(e) {
