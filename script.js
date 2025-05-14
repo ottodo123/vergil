@@ -801,10 +801,17 @@ function updateSaveListTabs(activeListName = null) {
         tab.textContent = listName;
         tab.setAttribute('data-list', listName);
         tab.addEventListener('click', function() {
-            const listName = this.getAttribute('data-list');
-            switchSaveList(listName);
-            updateURL({ list: listName });
-        });
+        const listName = this.getAttribute('data-list');
+        
+        // 리스트 전환 시 플래시카드가 있으면 제거
+        const flashcardContainer = document.getElementById('flashcard-container');
+        if (flashcardContainer) {
+            flashcardContainer.remove(); // 완전히 제거하여 각 리스트마다 새로 생성되도록 함
+        }
+        
+        switchSaveList(listName);
+        updateURL({ list: listName });
+    });
         saveListTabs.appendChild(tab);
         
         // 컨텐츠 생성
@@ -1108,6 +1115,35 @@ function startFlashcards(listName) {
         return;
     }
     
+    // 이미 플래시카드 컨테이너가 있는지 확인
+    const existingFlashcardContainer = document.getElementById('flashcard-container');
+    
+    // 이미 플래시카드가 있으면 새로 생성하지 않고 기존 것을 보여줌
+    if (existingFlashcardContainer) {
+        // 만약 현재 숨겨져 있다면 보이게 함
+        if (existingFlashcardContainer.style.display === 'none') {
+            existingFlashcardContainer.style.display = 'block';
+            
+            // 관련 단어 컨테이너 숨기기
+            const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
+            const wordItemsContainer = listContent.querySelector('.word-items-container');
+            if (wordItemsContainer) {
+                wordItemsContainer.style.display = 'none';
+            }
+        }
+        
+        // 필요하다면 현재 리스트의 단어로 플래시카드 내용 업데이트
+        if (currentListName !== listName) {
+            currentListName = listName;
+            currentFlashcardIndex = 0; // 새 리스트의 첫 번째 단어부터 시작
+            updateFlashcard(listName);
+        }
+        
+        return; // 기존 플래시카드가 있으므로 여기서 함수 종료
+    }
+    
+    // 플래시카드가 없는 경우에만 아래 코드 실행
+    
     // 현재 리스트 내용 숨기기
     const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
     const wordItemsContainer = listContent.querySelector('.word-items-container');
@@ -1188,7 +1224,6 @@ function startFlashcards(listName) {
             </div>
             <div class="flashcard-back">
                 <div class="definition">${words[currentFlashcardIndex].Definitions}</div>
-                <div class="occurrence">Occurrences in the Aeneid: ${words[currentFlashcardIndex]["Occurrences in the Aeneid"]}</div>
             </div>
         </div>
     `;
@@ -1239,7 +1274,6 @@ function updateFlashcard(listName) {
             frontDiv.textContent = words[currentFlashcardIndex].Headword;
             backDiv.innerHTML = `
                 <div class="definition">${words[currentFlashcardIndex].Definitions}</div>
-                <div class="occurrence">Occurrences in the Aeneid: ${words[currentFlashcardIndex]["Occurrences in the Aeneid"]}</div>
             `;
         }
     }
@@ -1249,10 +1283,10 @@ function updateFlashcard(listName) {
 function exitFlashcardMode(listName) {
     flashcardMode = false;
     
-    // 플래시카드 컨테이너 제거
+    // 플래시카드 컨테이너를 제거하지 않고 숨김
     const flashcardContainer = document.getElementById('flashcard-container');
     if (flashcardContainer) {
-        flashcardContainer.remove();
+        flashcardContainer.style.display = 'none';
     }
     
     // 단어 목록 다시 표시
