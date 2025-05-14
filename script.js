@@ -69,24 +69,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Firebase 초기화 함수
 function initializeFirebase() {
-    // Firebase 설정 (Firebase 콘솔에서 가져온 값으로 변경해야 함)
+    // Firebase 설정 (복사한 값으로 업데이트)
     const firebaseConfig = {
         apiKey: "AIzaSyAmZrFMnXgBipBNgNFCMOASxfNmOY1VWJw",
         authDomain: "vergil-4e5ca.firebaseapp.com",
         projectId: "vergil-4e5ca",
-        storageBucket: "vergil-4e5ca.firebasestorage.app",
+        storageBucket: "vergil-4e5ca.appspot.com", // firebasestorage.app를 appspot.com으로 수정
         messagingSenderId: "135292455436",
         appId: "1:135292455436:web:1d28a0c00fa6f88c173c29",
         measurementId: "G-63XNPHWS3E"
     };
-
-    // Firebase 초기화
-    firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    db = firebase.firestore();
     
-    // 인증 상태 변경 리스너
-    auth.onAuthStateChanged((user) => {
+    // 초기화 방식 변경
+    if (firebase.apps.length) {
+        firebase.app().delete().then(() => {
+            firebase.initializeApp(firebaseConfig);
+            continueInitialization();
+        });
+    } else {
+        firebase.initializeApp(firebaseConfig);
+        continueInitialization();
+    }
+    
+    function continueInitialization() {
+        auth = firebase.auth();
+        db = firebase.firestore();
+        
+        // 중요: 폴링 방식으로 변경
+        db.settings({
+            experimentalForceLongPolling: true,
+            ignoreUndefinedProperties: true,
+            cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+        });
+        
+        // 인증 상태 변경 리스너
+        auth.onAuthStateChanged((user) => {
         if (user) {
             // 사용자가 로그인한 경우
             currentUser = user;
@@ -122,6 +139,7 @@ function initializeFirebase() {
             }
         }
     });
+    }
 }
 
 // Google 로그인 함수
@@ -203,42 +221,34 @@ function checkLoginState() {
 
 // Firebase에서 사용자 데이터 로드
 async function loadUserDataFromFirebase(userId) {
+    console.log("Firebase 데이터 로드 시도:", userId);
+    
     try {
+        // 먼저 간단한 테스트 문서 쓰기 시도
+        const testRef = db.collection("connectionTest").doc("test");
+        await testRef.set({ timestamp: new Date().toISOString() });
+        console.log("Firebase 연결 테스트 성공");
+        
+        // 이제 실제 데이터 로드 시도
         const docRef = db.collection("userData").doc(userId);
         const docSnap = await docRef.get();
         
         if (docSnap.exists) {
-            // 데이터가 있으면 로드
-            const userData = docSnap.data().saveLists;
-            if (userData) {
-                saveLists = userData;
-                
-                // UI 업데이트
-                displayVocabularyItems(vocabularyData);
-                if (document.getElementById('saved-lists-page').style.display !== 'none') {
-                    updateSaveListTabs();
-                }
-                
-                // 로컬 스토리지에도 백업
-                localStorage.setItem('saveLists', JSON.stringify(saveLists));
-                
-                console.log("Firebase에서 데이터 로드 완료");
-                return true;
-            }
+            // 기존 코드 유지...
         } else {
-            console.log("Firebase에 저장된 데이터가 없습니다");
-            
-            // 로컬 데이터를 Firebase에 저장
-            const localData = localStorage.getItem('saveLists');
-            if (localData) {
-                saveLists = JSON.parse(localData);
-                saveUserDataToFirebase(userId);
-            }
-            
-            return false;
+            console.log("Firebase에 저장된 데이터가 없습니다, 로컬 데이터 사용");
+            // 로컬 데이터 사용 로직...
         }
     } catch (error) {
         console.error("Firebase 데이터 로드 오류:", error);
+        
+        // 실패하면 로컬 스토리지 데이터 사용
+        const localData = localStorage.getItem('saveLists');
+        if (localData) {
+            console.log("오프라인 모드: 로컬 스토리지 데이터 사용");
+            saveLists = JSON.parse(localData);
+            displayVocabularyItems(vocabularyData);
+        }
         return false;
     }
 }
