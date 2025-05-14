@@ -8,6 +8,8 @@ let googleAuth = null;
 let auth = null;
 let db = null;
 let currentUser = null;
+let currentFlashcardIndex = 0;
+let flashcardMode = false;
 // DOM elements
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
@@ -103,7 +105,7 @@ function initializeFirebase() {
         });
         
         // 인증 상태 변경 리스너
-        auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged((user) => {
         if (user) {
             // 사용자가 로그인한 경우
             currentUser = user;
@@ -113,7 +115,8 @@ function initializeFirebase() {
             // UI 업데이트
             updateLoginUI(user.displayName || user.email);
             
-            // Firebase에서 사용자 데이터 로드
+            // 중요: 로그인 시 Firebase에서 데이터 로드
+            // 이 함수 내에서 로컬 데이터를 Firebase 데이터로 대체
             loadUserDataFromFirebase(user.uid);
         } else {
             // 로그아웃 상태
@@ -121,15 +124,34 @@ function initializeFirebase() {
             localStorage.removeItem('userName');
             localStorage.removeItem('userEmail');
             
-            // 로컬 데이터 초기화 (로그아웃 시)
-            localStorage.removeItem('saveLists');
-            saveLists = { "Default List": [] };
-            displayVocabularyItems(vocabularyData); // UI 업데이트
+            // 로그아웃 시 로컬 데이터 유지 - 초기화하지 않음
+            // saveLists 현재 상태 그대로 유지
+            // 만약 로컬 스토리지에 저장된 데이터가 있으면 로드
+            const savedListsJson = localStorage.getItem('saveLists');
+            if (savedListsJson) {
+                try {
+                    saveLists = JSON.parse(savedListsJson);
+                } catch (e) {
+                    console.error("저장된 리스트 파싱 오류:", e);
+                    saveLists = { "Default List": [] };
+                    localStorage.setItem('saveLists', JSON.stringify(saveLists));
+                }
+            } else {
+                // 저장된 데이터가 없는 경우에만 초기화
+                saveLists = { "Default List": [] };
+                localStorage.setItem('saveLists', JSON.stringify(saveLists));
+            }
             
-            // UI 업데이트 - 로그인 버튼 표시 등
+            // UI 업데이트
+            displayVocabularyItems(vocabularyData);
+            if (document.getElementById('saved-lists-page').style.display !== 'none') {
+                updateSaveListTabs();
+            }
+            
+            // UI 업데이트 - 로그인 버튼 표시
             const userActions = document.querySelector('.user-actions');
             if (userActions) {
-                // 로그인 버튼 외 요소 제거
+                // 로그인 관련 UI 업데이트 로직...
                 while (userActions.firstChild) {
                     if (userActions.firstChild.className !== 'saved-lists-btn' && 
                         !userActions.firstChild.classList.contains('firebase-auth-container')) {
@@ -205,9 +227,8 @@ function handleLogout() {
         .then(() => {
             console.log("로그아웃 성공");
             
-            // 로그아웃 시 로컬 데이터 초기화
-            localStorage.removeItem('saveLists');
-            saveLists = { "Default List": [] };
+            // 로그아웃 시 로컬 스토리지 유지 (완전히 삭제하지 않음)
+            // 기존 데이터를 그대로 사용할 수 있도록 함
             
             // UI 업데이트 - 단어 목록 갱신
             displayVocabularyItems(vocabularyData);
@@ -234,36 +255,88 @@ function checkLoginState() {
 
 // Firebase에서 사용자 데이터 로드
 async function loadUserDataFromFirebase(userId) {
-    console.log("Firebase 데이터 로드 시도:", userId);
-    
     try {
-        // 먼저 간단한 테스트 문서 쓰기 시도
-        const testRef = db.collection("connectionTest").doc("test");
-        await testRef.set({ timestamp: new Date().toISOString() });
-        console.log("Firebase 연결 테스트 성공");
-        
-        // 이제 실제 데이터 로드 시도
+        console.log("Attempting to load data from Firebase:", userId);
         const docRef = db.collection("userData").doc(userId);
         const docSnap = await docRef.get();
         
+        // 로그인 전 로컬 데이터 백업
+        const localSaveLists = JSON.parse(JSON.stringify(saveLists));
+        
         if (docSnap.exists) {
-            // 기존 코드 유지...
+            // Firebase에 저장된 데이터가 있으면 로컬 데이터와 병합
+            const userData = docSnap.data().saveLists;
+            if (userData) {
+                // 이제 로컬 데이터를 완전히 대체하는 대신 병합
+                mergeSaveLists(localSaveLists, userData);
+                
+                // UI 업데이트
+                displayVocabularyItems(vocabularyData);
+                if (document.getElementById('saved-lists-page').style.display !== 'none') {
+                    updateSaveListTabs();
+                }
+                
+                // 로컬 스토리지에도 백업
+                localStorage.setItem('saveLists', JSON.stringify(saveLists));
+                
+                // 병합된 데이터를 Firebase에 다시 저장
+                await saveUserDataToFirebase(userId);
+                
+                console.log("Firebase data and local data have been merged");
+                return true;
+            }
         } else {
-            console.log("Firebase에 저장된 데이터가 없습니다, 로컬 데이터 사용");
-            // 로컬 데이터 사용 로직...
+            console.log("No data found in Firebase. Using local data.");
+            
+            // Firebase에 데이터가 없으면 현재 로컬 데이터를 유지하고 Firebase에 저장
+            await saveUserDataToFirebase(userId);
+            
+            // UI 업데이트
+            displayVocabularyItems(vocabularyData);
+            if (document.getElementById('saved-lists-page').style.display !== 'none') {
+                updateSaveListTabs();
+            }
+            
+            console.log("Local data has been saved to Firebase");
+            return true;
         }
     } catch (error) {
-        console.error("Firebase 데이터 로드 오류:", error);
-        
-        // 실패하면 로컬 스토리지 데이터 사용
-        const localData = localStorage.getItem('saveLists');
-        if (localData) {
-            console.log("오프라인 모드: 로컬 스토리지 데이터 사용");
-            saveLists = JSON.parse(localData);
-            displayVocabularyItems(vocabularyData);
-        }
+        console.error("Error loading data from Firebase:", error);
         return false;
     }
+}
+
+// 로컬 데이터와 Firebase 데이터 병합
+function mergeSaveLists(localLists, firebaseLists) {
+    // 두 리스트 모두에 있는 항목 처리
+    for (const listName in localLists) {
+        if (firebaseLists.hasOwnProperty(listName)) {
+            // 두 목록 모두에 있는 리스트의 경우, 단어들을 병합
+            const firebaseWords = firebaseLists[listName];
+            const localWords = localLists[listName];
+            
+            // 로컬 단어 중 Firebase에 없는 것들 추가
+            for (const localWord of localWords) {
+                const exists = firebaseWords.some(firebaseWord => 
+                    firebaseWord.Headword === localWord.Headword
+                );
+                
+                if (!exists) {
+                    firebaseLists[listName].push(localWord);
+                    console.log(`단어 "${localWord.Headword}"가 Firebase의 "${listName}" 리스트에 추가되었습니다`);
+                }
+            }
+        } else {
+            // Firebase에 없는 로컬 리스트는 그대로 추가
+            firebaseLists[listName] = localLists[listName];
+            console.log(`로컬 리스트 "${listName}"가 Firebase에 추가되었습니다`);
+        }
+    }
+    
+    // 결과를 현재 saveLists에 적용
+    saveLists = firebaseLists;
+    
+    return saveLists;
 }
 
 // Firebase에 사용자 데이터 저장
@@ -456,12 +529,14 @@ function updateURL(params) {
 
 // 데이터 저장 통합 함수
 function saveListsToStorage() {
-    // 항상 로컬 스토리지에 백업
-    localStorage.setItem('saveLists', JSON.stringify(saveLists));
-    
-    // 로그인 상태면 Firebase에도 저장
+    // 로그인 상태 확인
     if (auth && auth.currentUser) {
+        // 로그인 상태: 로컬 스토리지와 Firebase에 모두 저장
+        localStorage.setItem('saveLists', JSON.stringify(saveLists));
         saveUserDataToFirebase(auth.currentUser.uid);
+    } else {
+        // 로그아웃 상태: 임시로 로컬 스토리지에만 저장
+        localStorage.setItem('saveLists', JSON.stringify(saveLists));
     }
 }
 
@@ -623,7 +698,7 @@ function displayVocabularyItems(items) {
                 saveBtn.textContent = '☆';
                 saveBtn.classList.remove('saved');
             }
-            
+            synchronizeDefaultList();
             // 로컬 스토리지 업데이트
             saveListsToStorage();
         });
@@ -637,6 +712,49 @@ function displayVocabularyItems(items) {
             });
         }
     });
+}
+
+// Default List 동기화 함수 - Default List가 다른 모든 리스트의 모든 단어를 포함하도록 함
+function synchronizeDefaultList() {
+    // 모든 다른 리스트의 단어들을 가져와서 Default List에 없는 것만 추가
+    for (const listName in saveLists) {
+        if (listName !== "Default List") {
+            saveLists[listName].forEach(word => {
+                const existsInDefault = saveLists["Default List"].some(defaultWord => 
+                    defaultWord.Headword === word.Headword
+                );
+                
+                if (!existsInDefault) {
+                    saveLists["Default List"].push(word);
+                    console.log(`Word "${word.Headword}" has been automatically added to Default List.`);
+                }
+            });
+        }
+    }
+    
+    // Default List의 단어들 중 다른 어떤 리스트에도 없는 단어들 찾기
+    const wordsToRemoveFromDefault = [];
+    
+    saveLists["Default List"].forEach(defaultWord => {
+        let existsInOtherLists = false;
+        
+        for (const listName in saveLists) {
+            if (listName !== "Default List") {
+                if (saveLists[listName].some(word => word.Headword === defaultWord.Headword)) {
+                    existsInOtherLists = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!existsInOtherLists) {
+            wordsToRemoveFromDefault.push(defaultWord.Headword);
+        }
+    });
+  
+    
+    // 데이터 저장
+    saveListsToStorage();
 }
 
 // Create new save list
@@ -664,6 +782,7 @@ createListBtn.addEventListener('click', () => {
     
     // Refresh main vocabulary list to update save options
     displayVocabularyItems(vocabularyData);
+    synchronizeDefaultList();
 });
 
 // Update save list tabs
@@ -694,9 +813,19 @@ function updateSaveListTabs(activeListName = null) {
         content.id = `save-list-content-${listName.replace(/\s+/g, '-')}`;
         
         // Add action buttons for Copy and Print - NEW CODE
+        // Add action buttons for Copy and Print - NEW CODE
         const actionButtons = document.createElement('div');
         actionButtons.className = 'list-action-buttons';
-        
+
+        // Flashcard button - 새로 추가
+        const flashcardButton = document.createElement('button');
+        flashcardButton.className = 'action-btn flashcard-btn';
+        flashcardButton.innerHTML = '<span class="btn-icon">🔄</span> Flashcards';
+        flashcardButton.addEventListener('click', function() {
+            startFlashcards(listName);
+        });
+        actionButtons.appendChild(flashcardButton);
+
         // Copy button
         const copyButton = document.createElement('button');
         copyButton.className = 'action-btn copy-btn';
@@ -705,7 +834,9 @@ function updateSaveListTabs(activeListName = null) {
             copyList(listName);
         });
         actionButtons.appendChild(copyButton);
+
         
+
         // Print button
         const printButton = document.createElement('button');
         printButton.className = 'action-btn print-btn';
@@ -768,7 +899,7 @@ function updateSaveListTabs(activeListName = null) {
                                     saveLists[list].splice(indexInList, 1);
                                 }
                             }
-                            alert(`"${wordToRemove}" 단어가 모든 리스트에서 제거되었습니다.`);
+                            alert(`Word "${wordToRemove}" has been removed from all lists.`);
                         } else {
                             // 특정 리스트에서만 제거
                             saveLists[listToRemoveFrom].splice(wordIndex, 1);
@@ -792,12 +923,14 @@ function updateSaveListTabs(activeListName = null) {
                                 }
                             }
                         }
-                        
+                        synchronizeDefaultList();
                         // 로컬 스토리지 업데이트
                         saveListsToStorage();
                         
                         // 저장 목록 UI 업데이트
                         updateSaveListTabs(currentListName);
+
+                        displayVocabularyItems(vocabularyData);
                         
                         // 메인 단어 목록의 별표 아이콘 업데이트
                         const mainListBtn = document.querySelector(`.vocabulary-list .save-btn[data-word="${wordToRemove}"]`);
@@ -826,9 +959,11 @@ function updateSaveListTabs(activeListName = null) {
     });
     
     // Add delete list buttons if there's more than one list
-    if (Object.keys(saveLists).length > 1) {
-        document.querySelectorAll('.save-list-tab').forEach(tab => {
-            const listName = tab.getAttribute('data-list');
+        if (Object.keys(saveLists).length > 1) {
+    document.querySelectorAll('.save-list-tab').forEach(tab => {
+        const listName = tab.getAttribute('data-list');
+        // Default List는 삭제할 수 없음
+        if (listName !== "Default List") {
             const deleteBtn = document.createElement('span');
             deleteBtn.textContent = ' ×';
             deleteBtn.style.cursor = 'pointer';
@@ -836,6 +971,34 @@ function updateSaveListTabs(activeListName = null) {
             deleteBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 if (confirm(`Delete list "${listName}"?`)) {
+                    // 삭제할 리스트의 단어들 가져오기
+                    const wordsInListToDelete = saveLists[listName];
+                    
+                    // 각 단어에 대해 다른 리스트에 존재하는지 확인
+                    wordsInListToDelete.forEach(wordToCheck => {
+                        // 다른 사용자 정의 리스트에 단어가 존재하는지 확인
+                        let existsInOtherLists = false;
+                        for (const otherListName in saveLists) {
+                            // 현재 삭제할 리스트와 Default List는 제외
+                            if (otherListName !== listName && otherListName !== "Default List") {
+                                if (saveLists[otherListName].some(word => word.Headword === wordToCheck.Headword)) {
+                                    existsInOtherLists = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // 다른 리스트에 없으면 Default List에서도 제거
+                        if (!existsInOtherLists) {
+                            const defaultIndex = saveLists["Default List"].findIndex(word => word.Headword === wordToCheck.Headword);
+                            if (defaultIndex !== -1) {
+                                saveLists["Default List"].splice(defaultIndex, 1);
+                                console.log(`단어 "${wordToCheck.Headword}"가 Default List에서도 제거되었습니다.`);
+                            }
+                        }
+                    });
+                    
+                    // 리스트 삭제
                     delete saveLists[listName];
                     saveListsToStorage();
                     
@@ -843,11 +1006,18 @@ function updateSaveListTabs(activeListName = null) {
                     switchSaveList("Default List");
                     updateURL({ list: "Default List" });
                     updateSaveListTabs("Default List");
+                    
+                    // 단어 목록 UI 업데이트
+                    displayVocabularyItems(vocabularyData);
+                    
+                    // 사용자에게 알림
+                    alert(`List "${listName}" has been deleted. Words that were only in this list have also been removed from Default List.`);
                 }
             });
             tab.appendChild(deleteBtn);
-        });
-    }
+        }
+    });
+}
 }
 
 // Switch between save lists
@@ -892,13 +1062,28 @@ window.addEventListener('popstate', function() {
 async function loadSavedLists() {
     // 로그인 상태 확인
     if (auth && auth.currentUser) {
-        // 로그인된 경우: Firebase에서 데이터 로드 시도
-        console.log("로그인 상태: Firebase에서 데이터 로드 시도");
-        // Firebase에서 데이터를 로드하는 코드는 auth.onAuthStateChanged에서 이미 처리됨
+        // 로그인 상태인 경우는 이미 auth.onAuthStateChanged에서 처리됨
+        // 여기서는 아무 작업도 하지 않음
+        console.log("App initialization: Logged in, Firebase data will be loaded in onAuthStateChanged");
     } else {
-        // 로그아웃 상태: 빈 리스트로 초기화
-        console.log("로그아웃 상태: 빈 리스트로 초기화");
-        saveLists = { "Default List": [] };
+        // 로그아웃 상태: 로컬 스토리지에서 데이터 로드 (초기화하지 않음)
+        console.log("App initialization: Logged out, loading data from local storage");
+        
+        const savedListsJson = localStorage.getItem('saveLists');
+        if (savedListsJson) {
+            try {
+                saveLists = JSON.parse(savedListsJson);
+                console.log("Saved lists loaded from local storage");
+            } catch (e) {
+                console.error("Error parsing saved lists:", e);
+                saveLists = { "Default List": [] };
+                localStorage.setItem('saveLists', JSON.stringify(saveLists));
+            }
+        } else {
+            // 저장된 데이터가 없는 경우에만 초기화
+            saveLists = { "Default List": [] };
+            localStorage.setItem('saveLists', JSON.stringify(saveLists));
+        }
     }
 }
 
@@ -913,6 +1098,189 @@ window.addEventListener('error', function(e) {
         `;
     }
 });
+
+// Flashcard 기능 구현
+function startFlashcards(listName) {
+    const words = saveLists[listName];
+    
+    if (words.length === 0) {
+        alert('There are no words in this list.');
+        return;
+    }
+    
+    // 현재 리스트 내용 숨기기
+    const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
+    const wordItemsContainer = listContent.querySelector('.word-items-container');
+    
+    if (wordItemsContainer) {
+        wordItemsContainer.style.display = 'none';
+    }
+    
+    // 플래시카드 모드 활성화
+    flashcardMode = true;
+    currentFlashcardIndex = 0;
+    
+    // 플래시카드 컨테이너 생성
+    const flashcardContainer = document.createElement('div');
+    flashcardContainer.className = 'flashcard-container';
+    flashcardContainer.id = 'flashcard-container';
+    
+    // 진행 상태 표시
+    const progressDiv = document.createElement('div');
+    progressDiv.className = 'flashcard-progress';
+    progressDiv.textContent = `Word ${currentFlashcardIndex + 1} / ${words.length}`;
+    
+    // 컨트롤 버튼 추가
+    const controlsDiv = document.createElement('div');
+    controlsDiv.className = 'flashcard-controls';
+    
+    // 이전 버튼
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'flashcard-btn prev-btn';
+    prevBtn.textContent = '← Previous';
+    prevBtn.addEventListener('click', () => {
+        if (currentFlashcardIndex > 0) {
+            currentFlashcardIndex--;
+            updateFlashcard(listName);
+        }
+    });
+    
+    // 다음 버튼
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'flashcard-btn next-btn';
+    nextBtn.textContent = 'Next →';
+    nextBtn.addEventListener('click', () => {
+        if (currentFlashcardIndex < words.length - 1) {
+            currentFlashcardIndex++;
+            updateFlashcard(listName);
+        }
+    });
+    
+    // 종료 버튼
+    const exitBtn = document.createElement('button');
+    exitBtn.className = 'flashcard-btn exit-btn';
+    exitBtn.textContent = 'Exit';
+    exitBtn.addEventListener('click', () => {
+        exitFlashcardMode(listName);
+    });
+    
+    // 섞기 버튼
+    const shuffleBtn = document.createElement('button');
+    shuffleBtn.className = 'flashcard-btn shuffle-btn';
+    shuffleBtn.textContent = 'Shuffle';
+    shuffleBtn.addEventListener('click', () => {
+        shuffleFlashcards(listName);
+    });
+    
+    // 컨트롤 버튼 추가
+    controlsDiv.appendChild(prevBtn);
+    controlsDiv.appendChild(shuffleBtn);
+    controlsDiv.appendChild(exitBtn);
+    controlsDiv.appendChild(nextBtn);
+    
+    // 플래시카드 생성
+    const flashcardDiv = document.createElement('div');
+    flashcardDiv.className = 'flashcard';
+    flashcardDiv.innerHTML = `
+        <div class="flashcard-inner">
+            <div class="flashcard-front">
+                ${words[currentFlashcardIndex].Headword}
+            </div>
+            <div class="flashcard-back">
+                <div class="definition">${words[currentFlashcardIndex].Definitions}</div>
+                <div class="occurrence">Occurrences in the Aeneid: ${words[currentFlashcardIndex]["Occurrences in the Aeneid"]}</div>
+            </div>
+        </div>
+    `;
+    
+    // 플래시카드 클릭 이벤트
+    flashcardDiv.addEventListener('click', function() {
+        this.classList.toggle('flipped');
+    });
+    
+    // 플래시카드 컨테이너에 요소들 추가
+    flashcardContainer.appendChild(progressDiv);
+    flashcardContainer.appendChild(controlsDiv);
+    flashcardContainer.appendChild(flashcardDiv);
+    
+    // 리스트 내용 자리에 플래시카드 컨테이너 추가
+    if (wordItemsContainer) {
+        wordItemsContainer.parentNode.insertBefore(flashcardContainer, wordItemsContainer.nextSibling);
+    } else {
+        // 워드 컨테이너가 없는 경우 리스트 컨텐츠에 직접 추가
+        listContent.appendChild(flashcardContainer);
+    }
+}
+
+// 플래시카드 업데이트
+function updateFlashcard(listName) {
+    const words = saveLists[listName];
+    const flashcardContainer = document.getElementById('flashcard-container');
+    
+    if (!flashcardContainer) return;
+    
+    // 진행 상태 업데이트
+    const progressDiv = flashcardContainer.querySelector('.flashcard-progress');
+    if (progressDiv) {
+        progressDiv.textContent = `Word ${currentFlashcardIndex + 1} / ${words.length}`;
+    }
+    
+    // 현재 플래시카드 업데이트
+    const flashcardDiv = flashcardContainer.querySelector('.flashcard');
+    if (flashcardDiv) {
+        // 플래시카드가 뒤집혀있으면 다시 앞면으로
+        flashcardDiv.classList.remove('flipped');
+        
+        // 내용 업데이트
+        const frontDiv = flashcardDiv.querySelector('.flashcard-front');
+        const backDiv = flashcardDiv.querySelector('.flashcard-back');
+        
+        if (frontDiv && backDiv) {
+            frontDiv.textContent = words[currentFlashcardIndex].Headword;
+            backDiv.innerHTML = `
+                <div class="definition">${words[currentFlashcardIndex].Definitions}</div>
+                <div class="occurrence">Occurrences in the Aeneid: ${words[currentFlashcardIndex]["Occurrences in the Aeneid"]}</div>
+            `;
+        }
+    }
+}
+
+// 플래시카드 모드 종료
+function exitFlashcardMode(listName) {
+    flashcardMode = false;
+    
+    // 플래시카드 컨테이너 제거
+    const flashcardContainer = document.getElementById('flashcard-container');
+    if (flashcardContainer) {
+        flashcardContainer.remove();
+    }
+    
+    // 단어 목록 다시 표시
+    const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
+    const wordItemsContainer = listContent.querySelector('.word-items-container');
+    
+    if (wordItemsContainer) {
+        wordItemsContainer.style.display = 'block';
+    }
+}
+
+// 플래시카드 섞기
+function shuffleFlashcards(listName) {
+    // Fisher-Yates shuffle 알고리즘 사용
+    const words = saveLists[listName];
+    
+    for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]];
+    }
+    
+    // 첫 번째 카드부터 시작
+    currentFlashcardIndex = 0;
+    updateFlashcard(listName);
+    
+    // 저장 (선택 사항 - 섞인 순서를 유지하려면 주석 해제)
+    // saveListsToStorage();
+}
 
 // Function to copy list to clipboard
 function copyList(listName) {
@@ -1179,5 +1547,5 @@ document.addEventListener('DOMContentLoaded', function() {
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
         document.head.appendChild(script);
     }
-    // ... your existing code
+
 });
