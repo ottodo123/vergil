@@ -121,6 +121,11 @@ function initializeFirebase() {
             localStorage.removeItem('userName');
             localStorage.removeItem('userEmail');
             
+            // 로컬 데이터 초기화 (로그아웃 시)
+            localStorage.removeItem('saveLists');
+            saveLists = { "Default List": [] };
+            displayVocabularyItems(vocabularyData); // UI 업데이트
+            
             // UI 업데이트 - 로그인 버튼 표시 등
             const userActions = document.querySelector('.user-actions');
             if (userActions) {
@@ -199,6 +204,14 @@ function handleLogout() {
     auth.signOut()
         .then(() => {
             console.log("로그아웃 성공");
+            
+            // 로그아웃 시 로컬 데이터 초기화
+            localStorage.removeItem('saveLists');
+            saveLists = { "Default List": [] };
+            
+            // UI 업데이트 - 단어 목록 갱신
+            displayVocabularyItems(vocabularyData);
+            
             // 페이지 새로고침
             window.location.reload();
         })
@@ -877,16 +890,16 @@ window.addEventListener('popstate', function() {
 // Load saved lists from Google Drive
 // 저장된 리스트 불러오기
 async function loadSavedLists() {
-    // 로컬 스토리지에서 먼저 불러오기
-    const storedLists = localStorage.getItem('saveLists');
-    if (storedLists) {
-        saveLists = JSON.parse(storedLists);
+    // 로그인 상태 확인
+    if (auth && auth.currentUser) {
+        // 로그인된 경우: Firebase에서 데이터 로드 시도
+        console.log("로그인 상태: Firebase에서 데이터 로드 시도");
+        // Firebase에서 데이터를 로드하는 코드는 auth.onAuthStateChanged에서 이미 처리됨
     } else {
-        // Default List로 초기화
+        // 로그아웃 상태: 빈 리스트로 초기화
+        console.log("로그아웃 상태: 빈 리스트로 초기화");
         saveLists = { "Default List": [] };
     }
-    
-    // 로그인 상태면 Firebase에서 불러오기는 onAuthStateChanged에서 처리됨
 }
 
 // Error handling for missing CSV file
