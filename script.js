@@ -72,18 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Firebase 초기화 함수
 function initializeFirebase() {
     // Firebase 설정 (복사한 값으로 업데이트)
-    const firebaseConfig = {
-        apiKey: "AIzaSyAmZrFMnXgBipBNgNFCMOASxfNmOY1VWJw",
-        authDomain: "vergil-4e5ca.firebaseapp.com",
-        projectId: "vergil-4e5ca",
-        storageBucket: "vergil-4e5ca.appspot.com", // firebasestorage.app를 appspot.com으로 수정
-        messagingSenderId: "135292455436",
-        appId: "1:135292455436:web:1d28a0c00fa6f88c173c29",
-        measurementId: "G-63XNPHWS3E"
-    };
-    
-    // 초기화 방식 변경
-    if (firebase.apps.length) {
+     if (firebase.apps.length) {
         firebase.app().delete().then(() => {
             firebase.initializeApp(firebaseConfig);
             continueInitialization();
@@ -94,6 +83,7 @@ function initializeFirebase() {
     }
     
     function continueInitialization() {
+        // 기존 초기화 코드...
         auth = firebase.auth();
         db = firebase.firestore();
         
@@ -105,7 +95,7 @@ function initializeFirebase() {
         });
         
         // 인증 상태 변경 리스너
-    auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged((user) => {
         if (user) {
             // 사용자가 로그인한 경우
             currentUser = user;
