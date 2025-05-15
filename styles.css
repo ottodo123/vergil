@@ -11,7 +11,7 @@ body {
 }
 
 header {
-    background-color: #333;
+    background-color: #73404E;
     color: white;
     padding: 1rem;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -21,7 +21,6 @@ header {
     max-width: 1000px;
     margin: 0 auto;
     padding: 1rem;
-    flex:1;
 }
 
 .search-container {
@@ -409,6 +408,8 @@ header {
 
 /* Container for word items in saved lists */
 .word-items-container {
+    max-height: 600px;
+    overflow-y: auto;
     border: 1px solid #eee;
     border-radius: 4px;
     padding: 5px;

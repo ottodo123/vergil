@@ -24,11 +24,6 @@ const createListBtn = document.getElementById('create-list-btn');
 const mainTitle = document.getElementById('main-title');
 const aboutLink = document.getElementById('about-link');
 const aboutPage = document.getElementById('about-page');
-const newListPopup = document.getElementById('new-list-popup');
-const closePopupBtn = document.querySelector('.close-popup');
-const popupListName = document.getElementById('popup-list-name');
-const popupCreateBtn = document.getElementById('popup-create-btn');
-
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
@@ -789,17 +784,6 @@ function updateSaveListTabs(activeListName = null) {
         activeListName = currentListName;
     }
     
-    const tabsContainer = document.createElement('div');
-    tabsContainer.className = 'tabs-cpontainer';
-    saveListTabs.appendChild(tabsContainer);
-
-    const addListBtn = document.createElement('button');
-    addListBtn.className = 'add-list-btn';
-    addListBtn.innerHTML = '+';
-    addListBtn.title = 'Create new list';
-    addListBtn.addEventListener('click', showNewListPopup);
-    saveListTabs.appendChild(addListBtn);
-
     Object.keys(saveLists).forEach(listName => {
         // 탭 생성
         const tab = document.createElement('div');
