@@ -290,8 +290,7 @@ header {
 
 .header-nav {
     margin-top: 10px;
-margin-left:20vw;
-
+    margin-left: 0; /* 마진 제거 */
 }
 
 .header-nav a {

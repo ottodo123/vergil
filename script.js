@@ -807,6 +807,12 @@ function updateSaveListTabs(activeListName = null) {
         const flashcardContainer = document.getElementById('flashcard-container');
         if (flashcardContainer) {
             flashcardContainer.remove(); // 완전히 제거하여 각 리스트마다 새로 생성되도록 함
+            
+            // Flashcards 버튼 텍스트 초기화
+            const flashcardBtn = document.querySelector('.action-btn.flashcard-btn');
+            if (flashcardBtn) {
+                flashcardBtn.innerHTML = '<span class="btn-icon">🔄</span> Flashcards';
+            }
         }
         
         switchSaveList(listName);
@@ -820,7 +826,6 @@ function updateSaveListTabs(activeListName = null) {
         content.id = `save-list-content-${listName.replace(/\s+/g, '-')}`;
         
         // Add action buttons for Copy and Print - NEW CODE
-        // Add action buttons for Copy and Print - NEW CODE
         const actionButtons = document.createElement('div');
         actionButtons.className = 'list-action-buttons';
 
@@ -829,7 +834,22 @@ function updateSaveListTabs(activeListName = null) {
         flashcardButton.className = 'action-btn flashcard-btn';
         flashcardButton.innerHTML = '<span class="btn-icon">🔄</span> Flashcards';
         flashcardButton.addEventListener('click', function() {
-            startFlashcards(listName);
+            // 플래시카드 컨테이너 확인
+            const flashcardContainer = document.getElementById('flashcard-container');
+            
+            // 플래시카드가 이미 표시되고 있는 경우
+            if (flashcardContainer && flashcardContainer.style.display !== 'none') {
+                exitFlashcardMode(listName); // 플래시카드 모드 종료 (숨김)
+                
+                // 버튼 텍스트 변경
+                this.innerHTML = '<span class="btn-icon">🔄</span> Flashcards';
+            } else {
+                // 플래시카드가 없거나 숨겨져 있는 경우
+                startFlashcards(listName); // 플래시카드 시작
+                
+                // 버튼 텍스트 변경
+                this.innerHTML = '<span class="btn-icon">🔄</span> Back to List';
+            }
         });
         actionButtons.appendChild(flashcardButton);
 
@@ -841,8 +861,6 @@ function updateSaveListTabs(activeListName = null) {
             copyList(listName);
         });
         actionButtons.appendChild(copyButton);
-
-        
 
         // Print button
         const printButton = document.createElement('button');
@@ -1117,19 +1135,16 @@ function startFlashcards(listName) {
     
     // 이미 플래시카드 컨테이너가 있는지 확인
     const existingFlashcardContainer = document.getElementById('flashcard-container');
-    
+
     // 이미 플래시카드가 있으면 새로 생성하지 않고 기존 것을 보여줌
     if (existingFlashcardContainer) {
-        // 만약 현재 숨겨져 있다면 보이게 함
-        if (existingFlashcardContainer.style.display === 'none') {
-            existingFlashcardContainer.style.display = 'block';
-            
-            // 관련 단어 컨테이너 숨기기
-            const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
-            const wordItemsContainer = listContent.querySelector('.word-items-container');
-            if (wordItemsContainer) {
-                wordItemsContainer.style.display = 'none';
-            }
+        existingFlashcardContainer.style.display = 'block';
+        
+        // 관련 단어 컨테이너 숨기기
+        const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
+        const wordItemsContainer = listContent.querySelector('.word-items-container');
+        if (wordItemsContainer) {
+            wordItemsContainer.style.display = 'none';
         }
         
         // 필요하다면 현재 리스트의 단어로 플래시카드 내용 업데이트
@@ -1198,6 +1213,12 @@ function startFlashcards(listName) {
     exitBtn.textContent = 'Exit';
     exitBtn.addEventListener('click', () => {
         exitFlashcardMode(listName);
+        
+        // Flashcards 버튼 텍스트 원래대로 변경
+        const flashcardBtn = document.querySelector('.action-btn.flashcard-btn');
+        if (flashcardBtn) {
+            flashcardBtn.innerHTML = '<span class="btn-icon">🔄</span> Flashcards';
+        }
     });
     
     // 섞기 버튼
