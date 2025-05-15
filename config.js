@@ -1,9 +1,9 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyAmZrFMnXgBipBNgNFCMOASxfNmOY1VWJw",
-    authDomain: "vergil-4e5ca.firebaseapp.com",
-    projectId: "vergil-4e5ca",
-    storageBucket: "vergil-4e5ca.appspot.com",
-    messagingSenderId: "135292455436",
-    appId: "1:135292455436:web:1d28a0c00fa6f88c173c29",
-    measurementId: "G-63XNPHWS3E"
+    apiKey: "AIzaSyAFgEDLmMiWvvM_WhUouK0UCcDKQ2aG5hA",
+    authDomain: "vergil-f230b.firebaseapp.com",
+    projectId: "vergil-f230b",
+    storageBucket: "vergil-f230b.firebasestorage.app",
+    messagingSenderId: "495050024289",
+    appId: "1:495050024289:web:65374884952fa975b6d120",
+    measurementId: "G-Y7FLKQ8SCD"
 };
