@@ -21,6 +21,7 @@ header {
     max-width: 1000px;
     margin: 0 auto;
     padding: 1rem;
+    flex:1;
 }
 
 .search-container {
