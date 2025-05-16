@@ -15,7 +15,7 @@
 </head>
 <body>
     <header>
-        <div class="container">
+        <div class="container header-container">
             <h1 id="main-title">Vergil Glossary</h1>
             <nav class="header-nav">
                 <a href="#" id="about-link">About</a>
@@ -41,6 +41,15 @@
             </div>
         </div>
 
+        <div class="filter-controls">
+            <span class="filter-label">Sort by:</span>
+            <div class="filter-buttons">
+                <button id="filter-alphabet" class="filter-btn active">Alphabetical</button>
+                <button id="filter-required" class="filter-btn">Required First</button>
+                <button id="filter-occurrences" class="filter-btn">Frequency</button>
+            </div>
+        </div>
+
         <div class="vocabulary-list" id="vocabulary-list">
             <div class="loading">Loading data...</div>
         </div>
@@ -58,11 +67,6 @@
             <!-- List contents will be dynamically added here -->
         </div>
 
-        <div class="list-management">
-            <h3>Create New List</h3>
-            <input type="text" id="new-list-name" class="new-list-input" placeholder="List name...">
-            <button id="create-list-btn" class="create-list-btn">Create</button>
-        </div>
     </div>
 
     <div id="about-page" class="container page" style="display: none;">
@@ -86,7 +90,14 @@
             <p>© 2025 Vergil Glossary. All rights reserved.</p>
         </div>
     </div>
-
+    <div id="new-list-popup" class="popup">
+        <div class="popup-content">
+            <span class="close-popup">&times;</span>
+            <h3>Create New List</h3>
+            <input type="text" id="popup-list-name" placeholder="Enter list name...">
+            <button id="popup-create-btn">Create</button>
+        </div>
+    </div>
     <!-- Before importing other scripts, add code to ensure jsPDF is available globally -->
     <script>
         // Add this to ensure jsPDF is available globally

@@ -22,6 +22,14 @@ header {
     margin: 0 auto;
     padding: 1rem;
 }
+/* 헤더 내부 컨테이너 스타일 추가 */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+}
+
 
 .search-container {
     display: flex;
@@ -175,6 +183,100 @@ header {
     display: flex;
     border-bottom: 1px solid #eee;
     margin-bottom: 1rem;
+    position: relative; /* 위치 설정을 위함 */
+    align-items: center; /* 세로 중앙 정렬 */
+}
+
+.tabs-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto; /* 많은 탭이 있을 경우 가로 스크롤 */
+    padding-right: 40px; /* + 버튼을 위한 공간 확보 */
+}
+
+
+
+/* 새 리스트 추가 버튼 */
+.add-list-btn {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 50%;
+    background-color: #555;
+    color: white;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* 절대 위치 설정 */
+    transition: background-color 0.3s;
+}
+
+.add-list-btn:hover {
+    background-color: #333;
+}
+
+/* 팝업 스타일 */
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.popup-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 5px;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+.close-popup {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.close-popup:hover {
+    color: #333;
+}
+
+#popup-list-name {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#popup-create-btn {
+    padding: 8px 15px;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+}
+
+#popup-create-btn:hover {
+    background-color: #333;
 }
 
 .save-list-tab {
@@ -183,6 +285,7 @@ header {
     background-color: #f5f5f5;
     margin-right: 0.3rem;
     border-radius: 4px 4px 0 0;
+    white-space: nowrap; /* 탭 텍스트가 줄바꿈되지 않도록 설정 */
 }
 
 .save-list-tab.active {
@@ -244,8 +347,10 @@ header {
 
 /* 메인 타이틀 커서 스타일 */
 #main-title {
+    margin: 0;
     cursor: pointer;
 }
+
 
 /* 저장 리스트 페이지 스타일 */
 #saved-lists-page {
@@ -288,9 +393,10 @@ header {
     font-weight: bold;
 }
 
+/* 헤더 내비게이션 스타일 수정 */
 .header-nav {
-    margin-top: 10px;
-    margin-left: 0; /* 마진 제거 */
+    margin: 0;
+    padding: 0;
 }
 
 .header-nav a {
@@ -408,8 +514,6 @@ header {
 
 /* Container for word items in saved lists */
 .word-items-container {
-    max-height: 600px;
-    overflow-y: auto;
     border: 1px solid #eee;
     border-radius: 4px;
     padding: 5px;
@@ -452,7 +556,7 @@ header {
 .flashcard {
     position: relative;
     width: 100%;
-    height: 200px;
+    height: 350px;
     margin-bottom: 20px;
     perspective: 1000px;
     cursor: pointer;
@@ -542,6 +646,98 @@ header {
     color: #666;
 }
 
+/* 키보드 단축키 안내 스타일 */
+.keyboard-help {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+.keyboard-help .key {
+    display: inline-block;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: monospace;
+    font-size: 12px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    margin-right: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-btn {
+    padding: 6px 12px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    background-color: #eee;
+}
+
+.filter-btn.active {
+    background-color: #555;
+    color: white;
+    border-color: #444;
+}
+
+/* 화면 하단 여백 증가 */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem;
+    padding-bottom: 3rem; /* 하단 여백 증가 */
+}
+
+/* 저장 리스트 페이지 하단 여백 */
+#saved-lists-page {
+    background-color: white;
+    border-radius: 4px;
+    padding: 1rem;
+    padding-bottom: 3rem; /* 하단 여백 증가 */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-top: 1rem;
+    margin-bottom: 2rem; /* 하단 여백 추가 */
+}
+
+/* 단어 목록 하단 여백 */
+.vocabulary-list {
+    background-color: white;
+    border-radius: 4px;
+    padding: 1rem;
+    padding-bottom: 1.5rem; /* 하단 여백 증가 */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 2rem; /* 하단 여백 추가 */
+}
+
+/* 저장 리스트 컨텐츠 하단 여백 */
+.save-list-content {
+    margin-bottom: 2rem;
+}
+
 /* Print-specific styling that will be included in the PDF */
 @media print {
     body {
@@ -574,5 +770,22 @@ header {
     /* Hide UI elements when printing */
     .save-btn, .header, .search-container, .list-action-buttons {
         display: none !important;
+    }
+    .filter-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-label {
+        margin-bottom: 8px;
+    }
+    
+    .filter-buttons {
+        width: 100%;
+    }
+    
+    .filter-btn {
+        flex: 1;
+        text-align: center;
     }
 }
