@@ -79,27 +79,6 @@ header {
     display: none;
 }
 
-/* Update responsive design */
-@media (max-width: 768px) {
-    .header-top {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.5rem;
-        padding: 1.25rem 0 0.5rem 0;
-    }
-
-    .main-nav {
-        flex-wrap: wrap;
-        justify-content: center;
-        padding: 0 0 0.5rem 0;
-    }
-
-    .nav-btn {
-        flex: 1 0 45%;
-        min-width: 120px;
-    }
-}
-
 /* NEW CODE */
 /* Header login container styles */
 .firebase-auth-container-header {
