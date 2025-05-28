@@ -182,14 +182,7 @@ header {
         margin-bottom: 5px;
     }
 
-    .search-container {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .search-box {
-        margin-bottom: 1rem;
-    }
+    /* Removed conflicting search-container and search-box styles */
 
     .user-actions {
         justify-content: center;
@@ -1146,21 +1139,54 @@ header {
         white-space: nowrap;
     }
 
+    /* Mobile search container fixes */
+    .search-container {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 8px;
+    }
+
     .search-box {
         flex: 1;
-        min-width: 0; /* Allow search box to shrink */
+        min-width: 0;
+        margin-bottom: 0 !important;
+        margin-right: 0 !important;
     }
 
     #search-input {
-        min-width: 0; /* Allow input to shrink */
+        min-width: 0;
+        font-size: 14px;
+        padding: 0.6rem;
     }
 
-    /* ADD THESE NEW STYLES: */
-    .search-container {
-        flex-wrap: nowrap; /* Prevent wrapping */
+    .search-btn {
+        padding: 0.6rem 1rem;
+        font-size: 14px;
     }
 
     .action-buttons {
-        flex-shrink: 0; /* Prevent buttons from shrinking */
+        flex-shrink: 0;
+        display: flex;
+        gap: 8px;
+    }
+
+    .icon-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    /* Ensure dropdown stays above other content */
+    .filter-dropdown {
+        position: relative;
+        z-index: 1000;
+    }
+
+    .filter-dropdown-content {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        margin-top: 4px;
     }
 }
