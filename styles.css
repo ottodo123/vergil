@@ -28,7 +28,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 0 0.5rem 0;
+    padding: 1.25rem 0 0.5rem 0;
 }
 
 .header-auth {
@@ -40,7 +40,7 @@ header {
 .main-nav {
     display: flex;
     gap: 10px;
-    padding: 0 0 0.75rem 0;
+    padding: 0 0 0.5rem 0;
 }
 
 .nav-btn {
@@ -63,7 +63,6 @@ header {
 .nav-btn.active {
     background-color: rgba(255, 255, 255, 0.4);
     border-color: rgba(255, 255, 255, 0.6);
-    font-weight: 600;
 }
 
 /* Page content styling */
@@ -86,13 +85,13 @@ header {
         flex-direction: column;
         text-align: center;
         gap: 0.5rem;
-        padding: 1rem 0 0.5rem 0;
+        padding: 1.25rem 0 0.5rem 0;
     }
 
     .main-nav {
         flex-wrap: wrap;
         justify-content: center;
-        padding: 0 0 0.75rem 0;
+        padding: 0 0 0.5rem 0;
     }
 
     .nav-btn {
@@ -105,7 +104,7 @@ header {
 /* Header login container styles */
 .firebase-auth-container-header {
     display: inline-block;
-    margin-right: 15px;
+    margin-right: 0;
 }
 
 .firebase-auth-container-header .google-sign-in-btn {
