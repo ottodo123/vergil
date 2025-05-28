@@ -18,6 +18,12 @@
         <div class="container header-container">
             <h1 id="main-title">Vergil Glossary</h1>
             <nav class="header-nav">
+                <!-- Firebase 로그인 컨테이너 - 헤더로 이동 -->
+                <div class="firebase-auth-container-header">
+                    <button id="google-sign-in" class="google-sign-in-btn">
+                        <span class="google-icon">G</span> Sign in with Google
+                    </button>
+                </div>
                 <a href="#" id="about-link">About</a>
             </nav>
         </div>
@@ -31,12 +37,6 @@
                 <button class="search-btn" id="search-btn">Search</button>
             </div>
             <div class="user-actions">
-                <!-- Firebase 로그인 컨테이너 -->
-                <div class="firebase-auth-container">
-                    <button id="google-sign-in" class="google-sign-in-btn">
-                        <span class="google-icon">G</span> Sign in with Google
-                    </button>
-                </div>
                 <button class="saved-lists-btn" id="saved-lists-btn">Saved Lists</button>
             </div>
         </div>
@@ -74,7 +74,7 @@
         <div class="about-content">
             <p>Welcome.</p>
             <p>webbsdwdwd</p>
-            
+
             <h3>dwdwdw</h3>
             <ul>
                 <li>dwdwd</li>
@@ -82,11 +82,11 @@
                 <li>dwdwd</li>
                 <li>DWDWD</li>
             </ul>
-            
+
             <h3>DWDWD</h3>
             <p>DWDWDD.</p>
             <p>DWDWDW</p>
-            
+
             <p>© 2025 Vergil Glossary. All rights reserved.</p>
         </div>
     </div>
@@ -102,13 +102,13 @@
     <script>
         // Add this to ensure jsPDF is available globally
         console.log("Initial jsPDF check:", typeof window.jspdf);
-        
+
         // Try to find jsPDF in any form it might be available
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("DOMContentLoaded jsPDF check:", 
+            console.log("DOMContentLoaded jsPDF check:",
                     "window.jspdf =", typeof window.jspdf,
                     "jsPDF direct =", typeof jsPDF);
-            
+
             // Create a global reference if needed
             if (typeof window.jspdf === 'undefined') {
                 if (typeof jsPDF !== 'undefined') {
@@ -124,7 +124,7 @@
                 console.log("jsPDF is already available at window.jspdf");
             }
         });
-        
+
         // Force reload jsPDF if not found
         window.addEventListener('load', function() {
             if (typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined' && typeof window.jsPDF === 'undefined') {
