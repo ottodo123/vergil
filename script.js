@@ -896,18 +896,16 @@ function displayFilteredVocabularyItems(items) {
                 <div class="definition">${item.Definitions}</div>
                 <div class="occurrence">Occurrences in the Aeneid: ${item["Occurrences in the Aeneid"]}</div>
             </div>
-            <div style="position: relative;">
-                <button class="save-btn ${savedInLists.length > 0 ? 'saved' : ''}" data-word="${item.Headword}">
-                    ${savedInLists.length > 0 ? '★' : '☆'}
-                </button>
-                <div class="save-options" id="save-options-${item.Headword.replace(/[^a-zA-Z0-9]/g, '')}">
-                    ${Object.keys(saveLists).map(listName => {
-                        const isSaved = saveLists[listName].some(word => word.Headword === item.Headword);
-                        return `<button class="save-option-btn" data-list="${listName}" data-word="${item.Headword}">
-                            ${listName} ${isSaved ? '(★)' : '(☆)'}
-                        </button>`;
-                    }).join('')}
-                </div>
+            <button class="save-btn ${savedInLists.length > 0 ? 'saved' : ''}" data-word="${item.Headword}">
+                ${savedInLists.length > 0 ? '★' : '☆'}
+            </button>
+            <div class="save-options" id="save-options-${item.Headword.replace(/[^a-zA-Z0-9]/g, '')}">
+                ${Object.keys(saveLists).map(listName => {
+                    const isSaved = saveLists[listName].some(word => word.Headword === item.Headword);
+                    return `<button class="save-option-btn" data-list="${listName}" data-word="${item.Headword}">
+                        ${listName} ${isSaved ? '(★)' : '(☆)'}
+                    </button>`;
+                }).join('')}
             </div>
         `;
 
