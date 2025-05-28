@@ -203,7 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ADD THE NEW FILTER DROPDOWN CODE HERE:
     // Filter dropdown functionality
     if (filterDropdownBtn && filterDropdownContent) {
         // Toggle dropdown
