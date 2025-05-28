@@ -89,6 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
         googleSignInBtn.addEventListener('click', handleGoogleSignIn);
     }
 
+    // 모바일 구글 로그인 버튼 이벤트 리스너 설정
+    const googleSignInBtnMobile = document.getElementById('google-sign-in-mobile');
+    if (googleSignInBtnMobile) {
+        googleSignInBtnMobile.addEventListener('click', handleGoogleSignIn);
+    }
+
     // 팝업 관련 이벤트 리스너 설정
     console.log("Setting up popup event listeners"); // 디버깅 로그
     console.log("Popup elements:", {
@@ -276,6 +282,24 @@ function initializeFirebase() {
                   if (userInfo) userInfo.remove();
                   if (logoutBtn) logoutBtn.remove();
               }
+
+              // 모바일 메뉴의 로그인 버튼 표시
+              const mobileAuth = document.querySelector('.mobile-auth');
+              if (mobileAuth) {
+                  mobileAuth.innerHTML = `
+                      <div class="firebase-auth-container-mobile">
+                          <button id="google-sign-in-mobile" class="google-sign-in-btn-mobile">
+                              <span class="google-icon">G</span> Sign in with Google
+                          </button>
+                      </div>
+                  `;
+
+                  // 이벤트 리스너 재설정
+                  const googleSignInBtnMobile = document.getElementById('google-sign-in-mobile');
+                  if (googleSignInBtnMobile) {
+                      googleSignInBtnMobile.addEventListener('click', handleGoogleSignIn);
+                  }
+              }
           }
     });
     }
@@ -298,13 +322,13 @@ function handleGoogleSignIn() {
 
 // 로그인 UI 업데이트 함수
 function updateLoginUI(userName) {
-    // Firebase 로그인 컨테이너 숨기기 (헤더의 컨테이너)
+    // Desktop: Firebase 로그인 컨테이너 숨기기 (헤더의 컨테이너)
     const firebaseAuthContainer = document.querySelector('.firebase-auth-container-header');
     if (firebaseAuthContainer) {
         firebaseAuthContainer.style.display = 'none';
     }
 
-    // 헤더 auth 영역에 사용자 정보와 로그아웃 버튼 추가
+    // Desktop: 헤더 auth 영역에 사용자 정보와 로그아웃 버튼 추가
     const headerAuth = document.querySelector('.header-auth');
     if (headerAuth) {
         // 기존 사용자 정보 제거
@@ -327,6 +351,28 @@ function updateLoginUI(userName) {
         // 헤더 auth 영역에 추가
         headerAuth.appendChild(userInfo);
         headerAuth.appendChild(logoutBtn);
+    }
+
+    // Mobile: 모바일 메뉴의 auth 영역 업데이트
+    const mobileAuth = document.querySelector('.mobile-auth');
+    if (mobileAuth) {
+        // 기존 내용 제거
+        mobileAuth.innerHTML = '';
+
+        // 사용자 정보 표시
+        const userInfo = document.createElement('div');
+        userInfo.className = 'user-info-mobile';
+        userInfo.textContent = `${userName}`;
+
+        // 로그아웃 버튼 생성
+        const logoutBtn = document.createElement('button');
+        logoutBtn.className = 'logout-btn-mobile';
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.addEventListener('click', handleLogout);
+
+        // 모바일 auth 영역에 추가
+        mobileAuth.appendChild(userInfo);
+        mobileAuth.appendChild(logoutBtn);
     }
 }
 

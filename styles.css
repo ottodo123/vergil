@@ -910,13 +910,19 @@ header {
 /* Mobile menu styles */
 .mobile-menu-btn {
     display: none;
-    background: none;
-    border: none;
+    background-color: rgba(255, 255, 255, 0.2);
     color: white;
-    font-size: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 6px 12px;
     cursor: pointer;
-    padding: 0;
-    margin-left: 1rem;
+    font-size: 18px;
+    transition: all 0.3s;
+}
+
+.mobile-menu-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 .mobile-menu-overlay {
@@ -988,6 +994,57 @@ header {
     border-color: rgba(255, 255, 255, 0.6);
 }
 
+/* Mobile auth section */
+.mobile-auth {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.google-sign-in-btn-mobile {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 15px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #444;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.google-sign-in-btn-mobile:hover {
+    background-color: white;
+}
+
+.user-info-mobile {
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.logout-btn-mobile {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.logout-btn-mobile:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
 /* Update mobile styles */
 @media (max-width: 768px) {
     .main-nav {
@@ -1004,10 +1061,9 @@ header {
         padding: 1rem 0;
     }
 
+    /* Hide desktop auth on mobile */
     .header-auth {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        display: none;
     }
 
     #main-title {
