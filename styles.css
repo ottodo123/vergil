@@ -22,6 +22,7 @@ header {
     max-width: 1000px;
     margin: 0 auto;
     padding: 0 1rem;
+    position: relative;
 }
 
 .header-top {
@@ -1063,7 +1064,7 @@ header {
     .header-top {
         flex-direction: row;
         justify-content: flex-start;
-        padding: 1rem 0;
+        padding: 1rem 3rem 1rem 0; /* Added right padding for hamburger */
     }
 
     /* Hide desktop auth on mobile */
