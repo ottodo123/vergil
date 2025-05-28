@@ -29,7 +29,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 0 0.5rem 0;
+    padding: 1.5rem 0;
     position: relative;
 }
 
@@ -920,10 +920,8 @@ header {
     cursor: pointer;
     font-size: 18px;
     transition: all 0.3s;
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    position: relative;
+    margin-left: auto;
 }
 
 .mobile-menu-btn:hover {
@@ -1063,8 +1061,8 @@ header {
 
     .header-top {
         flex-direction: row;
-        justify-content: flex-start;
-        padding: 1rem 3rem 1rem 0; /* Added right padding for hamburger */
+        justify-content: space-between;
+        padding: 1.5rem 0;
     }
 
     /* Hide desktop auth on mobile */
@@ -1074,5 +1072,6 @@ header {
 
     #main-title {
         font-size: 1.5rem;
+        margin: 0;
     }
 }
