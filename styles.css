@@ -17,6 +17,86 @@ header {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/* Header layout restructure */
+.header-container {
+    padding: 1rem 1rem 0 1rem;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.header-auth {
+    display: flex;
+    align-items: center;
+}
+
+/* Main navigation */
+.main-nav {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 1rem;
+}
+
+.nav-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.nav-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.nav-btn.active {
+    background-color: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+}
+
+/* Page content styling */
+.page-content {
+    background-color: white;
+    border-radius: 4px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    line-height: 1.6;
+}
+
+/* Remove the old header-nav styles since we're not using it anymore */
+.header-nav {
+    display: none;
+}
+
+/* Update responsive design */
+@media (max-width: 768px) {
+    .header-top {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .main-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .nav-btn {
+        flex: 1 0 45%;
+        min-width: 120px;
+    }
+}
+
 /* NEW CODE */
 /* Header login container styles */
 .firebase-auth-container-header {

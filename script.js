@@ -34,6 +34,14 @@ const filterAlphabetBtn = document.getElementById('filter-alphabet');
 const filterRequiredBtn = document.getElementById('filter-required');
 const filterOccurrencesBtn = document.getElementById('filter-occurrences');
 
+//new const
+const glossaryBtn = document.getElementById('glossary-btn');
+const grammarBtn = document.getElementById('grammar-btn');
+const figuresBtn = document.getElementById('figures-btn');
+const aboutBtn = document.getElementById('about-btn');
+const grammarPage = document.getElementById('grammar-page');
+const figuresPage = document.getElementById('figures-page');
+
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
     loadCSVData();
@@ -54,6 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
         showSavedListsPage(list);
     } else if (page === 'about') {
         showAboutPage();
+    } else if (page === 'grammar') {
+        showGrammarPage();
+    } else if (page === 'figures') {
+        showFiguresPage();
     } else {
         showMainPage();
     }
@@ -194,10 +206,10 @@ function initializeFirebase() {
               }
 
               // 헤더에서 사용자 정보 제거
-              const headerNav = document.querySelector('.header-nav');
-              if (headerNav) {
-                  const userInfo = headerNav.querySelector('.user-info-header');
-                  const logoutBtn = headerNav.querySelector('.logout-btn-header');
+              const headerAuth = document.querySelector('.header-auth');
+              if (headerAuth) {
+                  const userInfo = headerAuth.querySelector('.user-info-header');
+                  const logoutBtn = headerAuth.querySelector('.logout-btn-header');
                   if (userInfo) userInfo.remove();
                   if (logoutBtn) logoutBtn.remove();
               }
@@ -229,12 +241,12 @@ function updateLoginUI(userName) {
         firebaseAuthContainer.style.display = 'none';
     }
 
-    // 헤더 내비게이션에 사용자 정보와 로그아웃 버튼 추가
-    const headerNav = document.querySelector('.header-nav');
-    if (headerNav) {
+    // 헤더 auth 영역에 사용자 정보와 로그아웃 버튼 추가
+    const headerAuth = document.querySelector('.header-auth');
+    if (headerAuth) {
         // 기존 사용자 정보 제거
-        const existingUserInfo = headerNav.querySelector('.user-info-header');
-        const existingLogoutBtn = headerNav.querySelector('.logout-btn-header');
+        const existingUserInfo = headerAuth.querySelector('.user-info-header');
+        const existingLogoutBtn = headerAuth.querySelector('.logout-btn-header');
         if (existingUserInfo) existingUserInfo.remove();
         if (existingLogoutBtn) existingLogoutBtn.remove();
 
@@ -249,10 +261,9 @@ function updateLoginUI(userName) {
         logoutBtn.textContent = 'Logout';
         logoutBtn.addEventListener('click', handleLogout);
 
-        // About 링크 앞에 삽입
-        const aboutLink = document.getElementById('about-link');
-        headerNav.insertBefore(logoutBtn, aboutLink);
-        headerNav.insertBefore(userInfo, logoutBtn);
+        // 헤더 auth 영역에 추가
+        headerAuth.appendChild(userInfo);
+        headerAuth.appendChild(logoutBtn);
     }
 }
 
@@ -542,24 +553,81 @@ function applyFilter(filterType) {
 }
 
 
-// About 링크 클릭 이벤트
-aboutLink.addEventListener('click', function(e) {
-    e.preventDefault();
+// Navigation button event listeners
+glossaryBtn.addEventListener('click', function() {
+    showMainPage();
+    updateURL({ page: null, list: null, q: null });
+});
+
+grammarBtn.addEventListener('click', function() {
+    showGrammarPage();
+    updateURL({ page: 'grammar' });
+});
+
+figuresBtn.addEventListener('click', function() {
+    showFiguresPage();
+    updateURL({ page: 'figures' });
+});
+
+aboutBtn.addEventListener('click', function() {
     showAboutPage();
     updateURL({ page: 'about' });
 });
 
-// 메인 타이틀 클릭 이벤트 (기존 코드 수정)
+// 메인 타이틀 클릭 이벤트
 mainTitle.addEventListener('click', function() {
     showMainPage();
     updateURL({ page: null, list: null, q: null });
 });
 
-// About 페이지 표시 함수
+// Page display functions
 function showAboutPage() {
+    hideAllPages();
+    aboutPage.style.display = 'block';
+    updateActiveNavButton('about');
+}
+
+function showGrammarPage() {
+    hideAllPages();
+    grammarPage.style.display = 'block';
+    updateActiveNavButton('grammar');
+}
+
+function showFiguresPage() {
+    hideAllPages();
+    figuresPage.style.display = 'block';
+    updateActiveNavButton('figures');
+}
+
+function hideAllPages() {
     mainPage.style.display = 'none';
     savedListsPage.style.display = 'none';
-    aboutPage.style.display = 'block';
+    aboutPage.style.display = 'none';
+    grammarPage.style.display = 'none';
+    figuresPage.style.display = 'none';
+}
+
+function updateActiveNavButton(activePage) {
+    // Remove active class from all nav buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Add active class to the appropriate button
+    switch(activePage) {
+        case 'glossary':
+            glossaryBtn.classList.add('active');
+            break;
+        case 'grammar':
+            grammarBtn.classList.add('active');
+            break;
+        case 'figures':
+            figuresBtn.classList.add('active');
+            break;
+        case 'about':
+            aboutBtn.classList.add('active');
+            break;
+    }
 }
 
 // 저장 리스트 버튼 클릭 이벤트 (팝업이 아닌 페이지 전환)
@@ -571,16 +639,16 @@ savedListsBtn.addEventListener('click', function() {
 
 // 메인 페이지 표시
 function showMainPage() {
+    hideAllPages();
     mainPage.style.display = 'block';
-    savedListsPage.style.display = 'none';
-    aboutPage.style.display = 'none';
+    updateActiveNavButton('glossary');
 }
 // 저장 리스트 페이지 표시
 function showSavedListsPage(activeList = null) {
-    mainPage.style.display = 'none';
+    hideAllPages();
     savedListsPage.style.display = 'block';
-    aboutPage.style.display = 'none';
     updateSaveListTabs(activeList);
+    // Don't update nav buttons for saved lists page
 }
 
 // URL 업데이트 함수

@@ -16,15 +16,22 @@
 <body>
     <header>
         <div class="container header-container">
-            <h1 id="main-title">Vergil Glossary</h1>
-            <nav class="header-nav">
-                <!-- Firebase 로그인 컨테이너 - 헤더로 이동 -->
-                <div class="firebase-auth-container-header">
-                    <button id="google-sign-in" class="google-sign-in-btn">
-                        <span class="google-icon">G</span> Sign in with Google
-                    </button>
+            <div class="header-top">
+                <h1 id="main-title">Vergil Glossary</h1>
+                <div class="header-auth">
+                    <!-- Firebase 로그인 컨테이너 -->
+                    <div class="firebase-auth-container-header">
+                        <button id="google-sign-in" class="google-sign-in-btn">
+                            <span class="google-icon">G</span> Sign in with Google
+                        </button>
+                    </div>
                 </div>
-                <a href="#" id="about-link">About</a>
+            </div>
+            <nav class="main-nav">
+                <button class="nav-btn active" id="glossary-btn">Glossary</button>
+                <button class="nav-btn" id="grammar-btn">Grammar Appendix</button>
+                <button class="nav-btn" id="figures-btn">Figures Index</button>
+                <button class="nav-btn" id="about-btn">About</button>
             </nav>
         </div>
     </header>
@@ -69,6 +76,23 @@
 
     </div>
 
+    <!-- Grammar Appendix 페이지 -->
+    <div id="grammar-page" class="container page" style="display: none;">
+        <h2>Grammar Appendix</h2>
+        <div class="page-content">
+            <p>Grammar content will be added here.</p>
+        </div>
+    </div>
+
+    <!-- Figures Index 페이지 -->
+    <div id="figures-page" class="container page" style="display: none;">
+        <h2>Figures Index</h2>
+        <div class="page-content">
+            <p>Figures content will be added here.</p>
+        </div>
+    </div>
+
+    <!-- About 페이지 -->
     <div id="about-page" class="container page" style="display: none;">
         <h2>About Latin Vocabulary Glossary</h2>
         <div class="about-content">
@@ -90,6 +114,7 @@
             <p>© 2025 Vergil Glossary. All rights reserved.</p>
         </div>
     </div>
+
     <div id="new-list-popup" class="popup">
         <div class="popup-content">
             <span class="close-popup">&times;</span>
@@ -98,6 +123,7 @@
             <button id="popup-create-btn">Create</button>
         </div>
     </div>
+
     <!-- Before importing other scripts, add code to ensure jsPDF is available globally -->
     <script>
         // Add this to ensure jsPDF is available globally
