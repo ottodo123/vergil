@@ -317,9 +317,10 @@ header {
 .vocabulary-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 1rem;
     border-bottom: 1px solid #eee;
+    position: relative;
 }
 
 .vocabulary-item:last-child {
@@ -328,6 +329,7 @@ header {
 
 .vocabulary-info {
     flex: 1;
+    padding-right: 3rem; /* Add padding to prevent text from going under the star */
 }
 
 .word {
@@ -355,11 +357,16 @@ header {
     color: #ccc;
     transition: color 0.3s;
     margin-left: 0.5rem;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
 }
 
 .save-options {
     display: none;
     position: absolute;
+    top: 2.5rem; /* Position below the star button */
+    right: 0;
     background-color: white;
     border: 1px solid #eee;
     border-radius: 4px;
