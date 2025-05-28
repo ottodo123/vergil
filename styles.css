@@ -29,6 +29,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 1.25rem 0 0.5rem 0;
+    position: relative;
 }
 
 .header-auth {
@@ -918,6 +919,10 @@ header {
     cursor: pointer;
     font-size: 18px;
     transition: all 0.3s;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .mobile-menu-btn:hover {
@@ -1057,7 +1062,7 @@ header {
 
     .header-top {
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: flex-start;
         padding: 1rem 0;
     }
 
