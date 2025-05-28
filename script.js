@@ -891,7 +891,7 @@ function displayFilteredVocabularyItems(items) {
         vocabularyItem.className = 'vocabulary-item';
         vocabularyItem.innerHTML = `
             <div class="vocabulary-info ${isRequired ? 'required-word' : ''}">
-                ${isRequired ? '<span class="required-star">★</span>' : ''}
+                ${isRequired ? '<span class="required-star"></span>' : ''}
                 <div class="word">${item.Headword}</div>
                 <div class="definition">${item.Definitions}</div>
                 <div class="occurrence">Occurrences in the Aeneid: ${item["Occurrences in the Aeneid"]}</div>
@@ -1294,7 +1294,7 @@ function updateSaveListTabs(activeListName = null) {
                 wordItem.className = 'vocabulary-item';
                 wordItem.innerHTML = `
                     <div class="vocabulary-info ${isRequired ? 'required-word' : ''}">
-                        ${isRequired ? '<span class="required-star">★</span>' : ''}
+                        ${isRequired ? '<span class="required-star"></span>' : ''}
                         <div class="word">${word.Headword}</div>
                         <div class="definition">${word.Definitions}</div>
                         <div class="occurrence">Occurrences in the Aeneid: ${word["Occurrences in the Aeneid"]}</div>

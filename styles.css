@@ -336,6 +336,7 @@ header {
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
     color: #333;
+    position: relative;
 }
 
 .definition {
@@ -593,11 +594,17 @@ header {
 
 .required-star {
     position: absolute;
-    top: -15px;
-    left: -20px;
+    top: 50%;
+    left: -15px;
+    transform: translateY(-50%);
     color: #e74c3c; /* 빨간색 */
-    font-size: 16px;
+    font-size: 8px;
     font-weight: bold;
+    width: 8px;
+    height: 8px;
+    background-color: #e74c3c;
+    border-radius: 50%;
+    display: inline-block;
 }
 
 /* 헤더 내비게이션 스타일 수정 */
