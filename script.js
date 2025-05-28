@@ -131,6 +131,69 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterOccurrencesBtn) {
         filterOccurrencesBtn.addEventListener('click', () => applyFilter('occurrences'));
     }
+
+    // Mobile menu functionality
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    const mobileNavBtns = document.querySelectorAll('.mobile-nav-btn');
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        });
+    }
+
+    function closeMobileMenu() {
+        mobileMenu.classList.remove('active');
+        mobileMenuOverlay.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+
+    if (mobileMenuClose) {
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+    }
+
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+    }
+
+    // Mobile navigation buttons
+    mobileNavBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const page = this.getAttribute('data-page');
+
+            // Update active state
+            mobileNavBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            // Navigate to page
+            switch(page) {
+                case 'glossary':
+                    showMainPage();
+                    updateURL({ page: null, list: null, q: null });
+                    break;
+                case 'grammar':
+                    showGrammarPage();
+                    updateURL({ page: 'grammar' });
+                    break;
+                case 'figures':
+                    showFiguresPage();
+                    updateURL({ page: 'figures' });
+                    break;
+                case 'about':
+                    showAboutPage();
+                    updateURL({ page: 'about' });
+                    break;
+            }
+
+            // Close menu
+            closeMobileMenu();
+        });
+    });
 });
 
 // Firebase 초기화 함수
@@ -628,6 +691,15 @@ function updateActiveNavButton(activePage) {
             aboutBtn.classList.add('active');
             break;
     }
+
+    // Also update mobile nav buttons
+    document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-page') === activePage ||
+            (activePage === 'glossary' && btn.getAttribute('data-page') === 'glossary')) {
+            btn.classList.add('active');
+        }
+    });
 }
 
 // 저장 리스트 버튼 클릭 이벤트 (팝업이 아닌 페이지 전환)
