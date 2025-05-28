@@ -1131,7 +1131,7 @@ header {
         flex-direction: row;
         justify-content: space-between;
         padding: 1.5rem 0;
-        align-items: center; /* Add this line */
+        align-items: center;
     }
 
     /* Hide desktop auth on mobile */
@@ -1142,8 +1142,8 @@ header {
     #main-title {
         font-size: 1.5rem;
         margin: 0;
-        flex-shrink: 1; /* Add this line */
-        white-space: nowrap; /* Add this line */
+        flex-shrink: 1;
+        white-space: nowrap;
     }
 
     .search-box {
@@ -1153,5 +1153,14 @@ header {
 
     #search-input {
         min-width: 0; /* Allow input to shrink */
+    }
+
+    /* ADD THESE NEW STYLES: */
+    .search-container {
+        flex-wrap: nowrap; /* Prevent wrapping */
+    }
+
+    .action-buttons {
+        flex-shrink: 0; /* Prevent buttons from shrinking */
     }
 }

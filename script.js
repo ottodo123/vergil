@@ -33,6 +33,8 @@ const closePopupBtn = document.querySelector('.close-popup');
 const filterAlphabetBtn = document.getElementById('filter-alphabet');
 const filterRequiredBtn = document.getElementById('filter-required');
 const filterOccurrencesBtn = document.getElementById('filter-occurrences');
+const filterDropdownBtn = document.getElementById('filter-dropdown-btn');
+const filterDropdownContent = document.getElementById('filter-dropdown-content');
 
 //new const
 const glossaryBtn = document.getElementById('glossary-btn');
@@ -138,35 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
         filterOccurrencesBtn.addEventListener('click', () => applyFilter('occurrences'));
     }
 
-    // Mobile menu functionality
-    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
-    const mobileMenuClose = document.getElementById('mobile-menu-close');
-    const mobileNavBtns = document.querySelectorAll('.mobile-nav-btn');
-
-    if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener('click', function() {
-            mobileMenu.classList.add('active');
-            mobileMenuOverlay.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
-        });
-    }
-
-    function closeMobileMenu() {
-        mobileMenu.classList.remove('active');
-        mobileMenuOverlay.style.display = 'none';
-        document.body.style.overflow = ''; // Restore scrolling
-    }
-
-    if (mobileMenuClose) {
-        mobileMenuClose.addEventListener('click', closeMobileMenu);
-    }
-
-    if (mobileMenuOverlay) {
-        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
-    }
-
     // Mobile navigation buttons
     mobileNavBtns.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -200,6 +173,46 @@ document.addEventListener('DOMContentLoaded', () => {
             closeMobileMenu();
         });
     });
+
+    // ADD THE NEW FILTER DROPDOWN CODE HERE:
+    // Filter dropdown functionality
+    const filterDropdownBtn = document.getElementById('filter-dropdown-btn');
+    const filterDropdownContent = document.getElementById('filter-dropdown-content');
+
+    if (filterDropdownBtn && filterDropdownContent) {
+        // Toggle dropdown
+        filterDropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            filterDropdownContent.classList.toggle('show');
+        });
+
+        // Handle filter selection
+        document.querySelectorAll('.filter-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const filterType = this.getAttribute('data-filter');
+
+                // Update active state
+                document.querySelectorAll('.filter-option').forEach(opt => {
+                    opt.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Apply filter
+                applyFilter(filterType);
+
+                // Close dropdown
+                filterDropdownContent.classList.remove('show');
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            filterDropdownContent.classList.remove('show');
+        });
+
+        // Set initial active state
+        document.querySelector('.filter-option[data-filter="alphabet"]').classList.add('active');
+    }
 });
 
 // Firebase 초기화 함수
