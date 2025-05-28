@@ -140,6 +140,35 @@ document.addEventListener('DOMContentLoaded', () => {
         filterOccurrencesBtn.addEventListener('click', () => applyFilter('occurrences'));
     }
 
+    // Mobile menu functionality
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    const mobileNavBtns = document.querySelectorAll('.mobile-nav-btn');
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', function() {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        });
+    }
+
+    function closeMobileMenu() {
+        mobileMenu.classList.remove('active');
+        mobileMenuOverlay.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+
+    if (mobileMenuClose) {
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+    }
+
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+    }
+
     // Mobile navigation buttons
     mobileNavBtns.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -176,9 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ADD THE NEW FILTER DROPDOWN CODE HERE:
     // Filter dropdown functionality
-    const filterDropdownBtn = document.getElementById('filter-dropdown-btn');
-    const filterDropdownContent = document.getElementById('filter-dropdown-content');
-
     if (filterDropdownBtn && filterDropdownContent) {
         // Toggle dropdown
         filterDropdownBtn.addEventListener('click', function(e) {
