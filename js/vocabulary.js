@@ -282,6 +282,3 @@ function displayFilteredVocabularyItems(items) {
         });
     });
 }
-
-// Make the function globally available
-window.displayFilteredVocabularyItems = displayFilteredVocabularyItems;
