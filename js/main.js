@@ -557,17 +557,80 @@ function displayIndividualListContent(listName) {
                 <div class="definition">${word.Definitions}</div>
                 <div class="occurrence">Occurrences in the Aeneid: ${word["Occurrences in the Aeneid"]}</div>
             </div>
-            <button class="save-btn saved" data-word="${word.Headword}" data-list="${listName}">★</button>
+            <button class="save-btn saved" data-word="${word.Headword}">★</button>
+            <div class="save-options" id="save-options-${word.Headword.replace(/[^a-zA-Z0-9]/g, '')}">
+                ${Object.keys(saveLists).map(list => {
+                    const displayName = list === "Default List" ? "All Saved Terms" : list;
+                    const isSaved = saveLists[list].some(w => w.Headword === word.Headword);
+                    return `<button class="save-option-btn" data-list="${list}" data-word="${word.Headword}">
+                        ${displayName} ${isSaved ? '(★)' : '(☆)'}
+                    </button>`;
+                }).join('')}
+            </div>
         `;
         individualListContent.appendChild(wordItem);
     });
 
+    // Add event listeners for save buttons to show dropdown
     individualListContent.querySelectorAll('.save-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const wordToRemove = this.getAttribute('data-word');
-            const listToRemoveFrom = this.getAttribute('data-list');
-            removeWordFromList(wordToRemove, listToRemoveFrom);
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const wordId = this.getAttribute('data-word');
+            const optionsDiv = document.getElementById(`save-options-${wordId.replace(/[^a-zA-Z0-9]/g, '')}`);
+
+            // Hide all other option divs first
+            document.querySelectorAll('.save-options').forEach(div => {
+                if (div !== optionsDiv) {
+                    div.style.display = 'none';
+                }
+            });
+
+            // Toggle the options div for this word
+            optionsDiv.style.display = optionsDiv.style.display === 'block' ? 'none' : 'block';
         });
+    });
+
+    // Add event listeners for save option buttons
+    individualListContent.querySelectorAll('.save-option-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const wordToToggle = this.getAttribute('data-word');
+            const list = this.getAttribute('data-list');
+
+            // Find the word data
+            const wordData = words.find(w => w.Headword === wordToToggle);
+            if (!wordData) return;
+
+            const wordIndex = saveLists[list].findIndex(w => w.Headword === wordToToggle);
+
+            if (wordIndex === -1) {
+                // Add to list
+                saveLists[list].push(wordData);
+                this.innerHTML = `${list === "Default List" ? "All Saved Terms" : list} (★)`;
+            } else {
+                // Remove from list
+                removeWordFromList(wordToToggle, list);
+
+                // Update the button text
+                const displayName = list === "Default List" ? "All Saved Terms" : list;
+                this.innerHTML = `${displayName} (☆)`;
+
+                // If removed from current list being viewed, refresh the display
+                if (list === listName) {
+                    displayIndividualListContent(listName);
+                    wordCountInfo.textContent = `${saveLists[listName].length} words in this list`;
+                }
+            }
+        });
+    });
+
+    // Hide save options when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.save-btn') && !e.target.closest('.save-options')) {
+            document.querySelectorAll('.save-options').forEach(div => {
+                div.style.display = 'none';
+            });
+        }
     });
 }
 
