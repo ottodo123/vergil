@@ -103,11 +103,6 @@
 
 /* Individual list page styles */
 #individual-list-page {
-    background-color: white;
-    border-radius: 4px;
-    padding: 1rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-top: 1rem;
 }
 
 #individual-list-title {
