@@ -1,4 +1,5 @@
 /* Saved lists page styles */
+/* Saved lists page styles */
 #saved-lists-page {
     background-color: white;
     border-radius: 4px;
@@ -7,20 +8,12 @@
     margin-top: 1rem;
 }
 
-/* Padding for inner content */
-#saved-lists-page h2,
-#saved-lists-page .saved-lists-directory,
-#saved-lists-page .add-new-list-btn {
-    padding-left: 2rem;
-    padding-right: 2rem;
-}
-
 #saved-lists-page h2 {
-    padding-top: 2rem;
+    padding: 2rem 2rem 1rem 2rem;
 }
 
 #saved-lists-page .add-new-list-btn {
-    margin-bottom: 2rem;
+    margin: 2rem;
 }
 
 /* Saved lists directory */
@@ -32,11 +25,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
-    margin-bottom: 0.5rem;
+    padding: 1rem 2rem;
+    margin-bottom: 0;
     background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 4px;
+    border: none;
+    border-top: 1px solid #e9ecef;
+    border-radius: 0;
     cursor: pointer;
     transition: all 0.2s ease;
 }
