@@ -135,3 +135,8 @@ function createListFromPopup() {
     // Update word list
     displayFilteredVocabularyItems(vocabularyData);
 }
+
+// Global functions needed by other modules
+window.showNewListPopup = showNewListPopup;
+window.hideNewListPopup = hideNewListPopup;
+window.createListFromPopup = createListFromPopup;

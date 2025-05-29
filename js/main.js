@@ -746,9 +746,6 @@ window.addEventListener('error', function(e) {
 });
 
 // Global functions needed by other modules
-window.showNewListPopup = showNewListPopup;
-window.hideNewListPopup = hideNewListPopup;
-window.createListFromPopup = createListFromPopup;
 window.updateSavedListsDirectory = updateSavedListsDirectory;
 window.updateURL = updateURL;
 window.showMainPage = showMainPage;
