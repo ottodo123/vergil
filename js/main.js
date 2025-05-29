@@ -443,11 +443,8 @@ function showIndividualListPage(listName) {
     displayIndividualListContent(listName);
 }
 
-// Display individual list content - COMPLETE FIX
+// Display individual list content - SIMPLE WORKING SOLUTION
 function displayIndividualListContent(listName) {
-    console.log('displayIndividualListContent called for:', listName);
-    console.log('vocabularyData length:', vocabularyData.length);
-
     const words = saveLists[listName];
     individualListContent.innerHTML = '';
 
@@ -456,15 +453,14 @@ function displayIndividualListContent(listName) {
         return;
     }
 
-    words.forEach(word => {
+    words.forEach((word, index) => {
         const isRequired = word.Required === 1 || word.Required === "1";
 
         const wordItem = document.createElement('div');
         wordItem.className = 'vocabulary-item';
-
-        // IMPORTANT: Add position: relative to vocabulary-item for absolute positioning to work
         wordItem.style.position = 'relative';
 
+        // Create the HTML structure
         wordItem.innerHTML = `
             <div class="vocabulary-info ${isRequired ? 'required-word' : ''}">
                 <div class="word">
@@ -474,95 +470,76 @@ function displayIndividualListContent(listName) {
                 <div class="definition">${word.Definitions}</div>
                 <div class="occurrence">Occurrences in the Aeneid: ${word["Occurrences in the Aeneid"]}</div>
             </div>
-            <button class="save-btn saved" data-word="${word.Headword}">★</button>
-            <div class="save-options" id="save-options-${word.Headword.replace(/[^a-zA-Z0-9]/g, '')}" style="display: none;">
-                ${Object.keys(saveLists).map(list => {
-                    const displayName = list === "Default List" ? "All Saved Terms" : list;
-                    const isSaved = saveLists[list].some(w => w.Headword === word.Headword);
-                    return `<button class="save-option-btn" data-list="${list}" data-word="${word.Headword}">
-                        ${displayName} ${isSaved ? '(★)' : '(☆)'}
-                    </button>`;
-                }).join('')}
-            </div>
         `;
-        individualListContent.appendChild(wordItem);
-    });
 
-    // Add event listeners after a brief delay to ensure DOM is ready
-    setTimeout(() => {
-        // Add click handlers for save buttons
-        const saveButtons = individualListContent.querySelectorAll('.save-btn');
-        console.log('Found save buttons:', saveButtons.length);
+        // Create save button
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'save-btn saved';
+        saveBtn.setAttribute('data-word', word.Headword);
+        saveBtn.textContent = '★';
 
-        saveButtons.forEach((btn, index) => {
-            btn.addEventListener('click', function(e) {
+        // Create options div
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'save-options';
+        optionsDiv.id = `save-options-${word.Headword.replace(/[^a-zA-Z0-9]/g, '')}`;
+        optionsDiv.style.display = 'none';
+        optionsDiv.style.position = 'absolute';
+        optionsDiv.style.top = '2.5rem';
+        optionsDiv.style.right = '0';
+        optionsDiv.style.backgroundColor = 'white';
+        optionsDiv.style.border = '1px solid #eee';
+        optionsDiv.style.borderRadius = '4px';
+        optionsDiv.style.padding = '0.5rem';
+        optionsDiv.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+        optionsDiv.style.zIndex = '1000';
+        optionsDiv.style.minWidth = '150px';
+
+        // Add list options to the div
+        Object.keys(saveLists).forEach(list => {
+            const displayName = list === "Default List" ? "All Saved Terms" : list;
+            const isSaved = saveLists[list].some(w => w.Headword === word.Headword);
+
+            const optionBtn = document.createElement('button');
+            optionBtn.className = 'save-option-btn';
+            optionBtn.setAttribute('data-list', list);
+            optionBtn.setAttribute('data-word', word.Headword);
+            optionBtn.style.display = 'block';
+            optionBtn.style.width = '100%';
+            optionBtn.style.textAlign = 'left';
+            optionBtn.style.padding = '0.5rem';
+            optionBtn.style.border = 'none';
+            optionBtn.style.backgroundColor = 'white';
+            optionBtn.style.cursor = 'pointer';
+            optionBtn.style.marginBottom = '0.2rem';
+            optionBtn.textContent = `${displayName} ${isSaved ? '(★)' : '(☆)'}`;
+
+            // Add hover effect
+            optionBtn.onmouseover = function() {
+                this.style.backgroundColor = '#f5f5f5';
+            };
+            optionBtn.onmouseout = function() {
+                this.style.backgroundColor = 'white';
+            };
+
+            // Add click handler for option button
+            optionBtn.onclick = function(e) {
                 e.stopPropagation();
-                e.preventDefault();
 
-                console.log('Save button clicked:', index);
+                const wordData = vocabularyData.find(item => item.Headword === word.Headword);
+                if (!wordData) return;
 
-                const wordId = this.getAttribute('data-word');
-                const optionsDiv = document.getElementById(`save-options-${wordId.replace(/[^a-zA-Z0-9]/g, '')}`);
-
-                console.log('Options div found:', !!optionsDiv);
-                console.log('Current display:', optionsDiv ? optionsDiv.style.display : 'N/A');
-
-                // Hide all other option divs first
-                document.querySelectorAll('.save-options').forEach(div => {
-                    if (div !== optionsDiv) {
-                        div.style.display = 'none';
-                    }
-                });
-
-                // Toggle the options div for this word
-                if (optionsDiv) {
-                    if (optionsDiv.style.display === 'none' || optionsDiv.style.display === '') {
-                        optionsDiv.style.display = 'block';
-                        // Ensure it's on top
-                        optionsDiv.style.zIndex = '1000';
-                        console.log('Showing options div');
-                    } else {
-                        optionsDiv.style.display = 'none';
-                        console.log('Hiding options div');
-                    }
-                }
-            });
-        });
-
-        // Add event listeners for save option buttons
-        const saveOptionButtons = individualListContent.querySelectorAll('.save-option-btn');
-        console.log('Found save option buttons:', saveOptionButtons.length);
-
-        saveOptionButtons.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                e.preventDefault();
-
-                const wordToToggle = this.getAttribute('data-word');
-                const list = this.getAttribute('data-list');
-
-                console.log('Save option clicked:', wordToToggle, list);
-
-                // Find the word data from vocabularyData
-                const wordData = vocabularyData.find(item => item.Headword === wordToToggle);
-                if (!wordData) {
-                    console.error('Could not find word data for:', wordToToggle);
-                    return;
-                }
-
-                const wordIndex = saveLists[list].findIndex(w => w.Headword === wordToToggle);
+                const wordIndex = saveLists[list].findIndex(w => w.Headword === word.Headword);
 
                 if (wordIndex === -1) {
                     // Add to list
                     saveLists[list].push(wordData);
-                    this.innerHTML = `${list === "Default List" ? "All Saved Terms" : list} (★)`;
+                    this.textContent = `${displayName} (★)`;
                     synchronizeDefaultList();
                     saveListsToStorage();
                 } else {
                     // Remove from list
-                    removeWordFromList(wordToToggle, list);
-                    const displayName = list === "Default List" ? "All Saved Terms" : list;
-                    this.innerHTML = `${displayName} (☆)`;
+                    removeWordFromList(word.Headword, list);
+                    this.textContent = `${displayName} (☆)`;
 
                     // If removed from current list being viewed, refresh the display
                     if (list === listName) {
@@ -575,9 +552,37 @@ function displayIndividualListContent(listName) {
                 if (mainPage.style.display !== 'none') {
                     displayFilteredVocabularyItems(vocabularyData);
                 }
-            });
+            };
+
+            optionsDiv.appendChild(optionBtn);
         });
-    }, 100); // Slightly longer delay to ensure rendering is complete
+
+        // Add click handler for save button
+        saveBtn.onclick = function(e) {
+            e.stopPropagation();
+
+            // Hide all other options
+            document.querySelectorAll('.save-options').forEach(div => {
+                if (div !== optionsDiv) {
+                    div.style.display = 'none';
+                }
+            });
+
+            // Toggle this options div
+            if (optionsDiv.style.display === 'none') {
+                optionsDiv.style.display = 'block';
+            } else {
+                optionsDiv.style.display = 'none';
+            }
+        };
+
+        // Append button and options to word item
+        wordItem.appendChild(saveBtn);
+        wordItem.appendChild(optionsDiv);
+
+        // Add word item to content
+        individualListContent.appendChild(wordItem);
+    });
 }
 
 // URL update function
