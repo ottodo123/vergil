@@ -1,0 +1,248 @@
+/* Saved lists page styles */
+#saved-lists-page {
+    background-color: white;
+    border-radius: 4px;
+    padding: 1rem;
+    padding-bottom: 3rem; /* Bottom padding increase */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-top: 1rem;
+    margin-bottom: 2rem; /* Bottom margin added */
+}
+
+/* Save list tabs */
+.save-list-tabs {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 1rem;
+    position: relative; /* For positioning */
+    align-items: center; /* Vertical center alignment */
+}
+
+.tabs-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto; /* Horizontal scroll for many tabs */
+    padding-right: 40px; /* Space for + button */
+}
+
+.save-list-tab {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    background-color: #f5f5f5;
+    margin-right: 0.3rem;
+    border-radius: 4px 4px 0 0;
+    white-space: nowrap; /* Prevent tab text from wrapping */
+}
+
+.save-list-tab.active {
+    background-color: #555;
+    color: white;
+}
+
+/* New list add button */
+.add-list-btn {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 50%;
+    background-color: #555;
+    color: white;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* Absolute positioning setup */
+    transition: background-color 0.3s;
+}
+
+.add-list-btn:hover {
+    background-color: #333;
+}
+
+/* List content */
+.save-list-content {
+    display: none;
+    margin-bottom: 2rem;
+}
+
+.save-list-content.active {
+    display: block;
+}
+
+/* List management */
+.list-management {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.new-list-input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 0.5rem;
+    width: 60%;
+}
+
+.create-list-btn {
+    padding: 0.5rem 1rem;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* List action buttons container */
+.list-action-buttons {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+
+/* Action buttons (Copy and Print) */
+.action-btn {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    background-color: #f1f3f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: #e8eaed;
+    color: #333;
+}
+
+.copy-btn:hover {
+    background-color: #e3f2fd;
+    border-color: #bbdefb;
+}
+
+.print-btn:hover {
+    background-color: #e8f5e9;
+    border-color: #c8e6c9;
+}
+
+/* Button icons */
+.btn-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* Word count display */
+.word-count-info {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #eee;
+}
+
+/* Container for word items in saved lists */
+.word-items-container {
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+/* Popup styles */
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.popup-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 5px;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+.close-popup {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.close-popup:hover {
+    color: #333;
+}
+
+#popup-list-name {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#popup-create-btn {
+    padding: 8px 15px;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+}
+
+#popup-create-btn:hover {
+    background-color: #333;
+}
+
+/* About page styles */
+#about-page {
+    background-color: white;
+    border-radius: 4px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    line-height: 1.6;
+}
+
+#about-page h2 {
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+#about-page h3 {
+    color: #555;
+    margin: 1.5rem 0 0.8rem;
+}
+
+#about-page p {
+    margin-bottom: 1rem;
+}
+
+#about-page ul {
+    margin-left: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.about-content {
+    max-width: 800px;
+}

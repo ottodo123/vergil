@@ -1,0 +1,93 @@
+/* CSS Reset and Base Styles */
+* {
+    box-sizing: border-box;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f8f8f8;
+    color: #333;
+}
+
+/* Container */
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem;
+    padding-bottom: 3rem; /* Bottom padding increase */
+}
+
+/* Page structure */
+.page {
+    display: none;
+}
+
+/* Page content styling */
+.page-content {
+    background-color: white;
+    border-radius: 4px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    line-height: 1.6;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+}
+
+/* Loading and status messages */
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #555;
+}
+
+.no-results {
+    text-align: center;
+    padding: 2rem;
+    color: #777;
+}
+
+/* Main title cursor style */
+#main-title {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Print-specific styling */
+@media print {
+    body {
+        font-size: 11pt;
+    }
+
+    .word {
+        font-weight: bold;
+        font-size: 12pt;
+        margin-bottom: 4pt;
+    }
+
+    .definition {
+        font-size: 11pt;
+        margin-bottom: 4pt;
+    }
+
+    .occurrence {
+        font-style: italic;
+        font-size: 10pt;
+    }
+
+    .vocabulary-item {
+        page-break-inside: avoid;
+        margin-bottom: 10pt;
+        border-bottom: 1pt solid #eee;
+        padding-bottom: 10pt;
+    }
+
+    /* Hide UI elements when printing */
+    .save-btn, .header, .search-container, .list-action-buttons {
+        display: none !important;
+    }
+}

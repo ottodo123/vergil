@@ -1,0 +1,122 @@
+/* Flashcard Container */
+.flashcard-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+/* Flashcard */
+.flashcard {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    margin-bottom: 20px;
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.flashcard.flipped .flashcard-inner {
+    transform: rotateY(180deg);
+}
+
+.flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.flashcard-front {
+    background-color: #f8f9fa;
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.flashcard-back {
+    background-color: #e9ecef;
+    color: #333;
+    transform: rotateY(180deg);
+    font-size: 18px;
+    overflow-y: auto;
+    text-align: left;
+    padding: 30px;  /* Padding increase */
+    display: flex;
+    align-items: center;  /* Vertical center alignment */
+    justify-content: center;  /* Horizontal center alignment */
+}
+
+.flashcard-back .definition {
+    margin-bottom: 0;  /* Remove bottom margin */
+    line-height: 1.5;  /* Line spacing adjustment */
+}
+
+.flashcard-back .occurrence {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Flashcard Controls */
+.flashcard-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.flashcard-btn {
+    padding: 8px 15px;
+    background-color: #f1f3f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.flashcard-btn:hover {
+    background-color: #e8eaed;
+}
+
+/* Flashcard Progress */
+.flashcard-progress {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Keyboard shortcuts guide styles */
+.keyboard-help {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+.keyboard-help .key {
+    display: inline-block;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: monospace;
+    font-size: 12px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+}
