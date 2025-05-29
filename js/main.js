@@ -484,72 +484,74 @@ function displayIndividualListContent(listName) {
         individualListContent.appendChild(wordItem);
     });
 
-    // Add event listeners directly without setTimeout
-    const saveButtons = individualListContent.querySelectorAll('.save-btn');
+    // Add event listeners with proper timing
+    setTimeout(() => {
+        const saveButtons = individualListContent.querySelectorAll('.save-btn');
 
-    saveButtons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const wordId = this.getAttribute('data-word');
-            const optionsDiv = document.getElementById(`save-options-${wordId.replace(/[^a-zA-Z0-9]/g, '')}`);
+        saveButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const wordId = this.getAttribute('data-word');
+                const optionsDiv = document.getElementById(`save-options-${wordId.replace(/[^a-zA-Z0-9]/g, '')}`);
 
-            // Hide all other option divs first
-            document.querySelectorAll('.save-options').forEach(div => {
-                if (div !== optionsDiv) {
-                    div.style.display = 'none';
+                // Hide all other option divs first
+                document.querySelectorAll('.save-options').forEach(div => {
+                    if (div !== optionsDiv) {
+                        div.style.display = 'none';
+                    }
+                });
+
+                // Toggle the options div for this word
+                if (optionsDiv) {
+                    optionsDiv.style.display = optionsDiv.style.display === 'block' ? 'none' : 'block';
                 }
             });
-
-            // Toggle the options div for this word
-            if (optionsDiv) {
-                optionsDiv.style.display = optionsDiv.style.display === 'block' ? 'none' : 'block';
-            }
         });
-    });
 
-    // Add event listeners for save option buttons
-    const saveOptionButtons = individualListContent.querySelectorAll('.save-option-btn');
+        // Add event listeners for save option buttons
+        const saveOptionButtons = individualListContent.querySelectorAll('.save-option-btn');
 
-    saveOptionButtons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const wordToToggle = this.getAttribute('data-word');
-            const list = this.getAttribute('data-list');
+        saveOptionButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const wordToToggle = this.getAttribute('data-word');
+                const list = this.getAttribute('data-list');
 
-            // Find the word data from vocabularyData
-            const wordData = vocabularyData.find(item => item.Headword === wordToToggle);
-            if (!wordData) {
-                console.error('Could not find word data for:', wordToToggle);
-                return;
-            }
-
-            const wordIndex = saveLists[list].findIndex(w => w.Headword === wordToToggle);
-
-            if (wordIndex === -1) {
-                // Add to list
-                saveLists[list].push(wordData);
-                this.innerHTML = `${list === "Default List" ? "All Saved Terms" : list} (★)`;
-                synchronizeDefaultList();
-                saveListsToStorage();
-            } else {
-                // Remove from list
-                removeWordFromList(wordToToggle, list);
-                const displayName = list === "Default List" ? "All Saved Terms" : list;
-                this.innerHTML = `${displayName} (☆)`;
-
-                // If removed from current list being viewed, refresh the display
-                if (list === listName) {
-                    displayIndividualListContent(listName);
-                    wordCountInfo.textContent = `${saveLists[listName].length} words in this list`;
+                // Find the word data from vocabularyData
+                const wordData = vocabularyData.find(item => item.Headword === wordToToggle);
+                if (!wordData) {
+                    console.error('Could not find word data for:', wordToToggle);
+                    return;
                 }
-            }
 
-            // Update main vocabulary list if visible
-            if (mainPage.style.display !== 'none') {
-                displayFilteredVocabularyItems(vocabularyData);
-            }
+                const wordIndex = saveLists[list].findIndex(w => w.Headword === wordToToggle);
+
+                if (wordIndex === -1) {
+                    // Add to list
+                    saveLists[list].push(wordData);
+                    this.innerHTML = `${list === "Default List" ? "All Saved Terms" : list} (★)`;
+                    synchronizeDefaultList();
+                    saveListsToStorage();
+                } else {
+                    // Remove from list
+                    removeWordFromList(wordToToggle, list);
+                    const displayName = list === "Default List" ? "All Saved Terms" : list;
+                    this.innerHTML = `${displayName} (☆)`;
+
+                    // If removed from current list being viewed, refresh the display
+                    if (list === listName) {
+                        displayIndividualListContent(listName);
+                        wordCountInfo.textContent = `${saveLists[listName].length} words in this list`;
+                    }
+                }
+
+                // Update main vocabulary list if visible
+                if (mainPage.style.display !== 'none') {
+                    displayFilteredVocabularyItems(vocabularyData);
+                }
+            });
         });
-    });
+    }, 0);
 }
 
 // URL update function
