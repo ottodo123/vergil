@@ -474,11 +474,16 @@ function displayIndividualListContent(listName) {
     });
 
     // Add event listeners for save buttons to show dropdown
-    individualListContent.querySelectorAll('.save-btn').forEach(btn => {
+    const saveButtons = individualListContent.querySelectorAll('.save-btn');
+    console.log('Found save buttons:', saveButtons.length);
+
+    saveButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
+            console.log('Save button clicked!');
             e.stopPropagation();
             const wordId = this.getAttribute('data-word');
             const optionsDiv = document.getElementById(`save-options-${wordId.replace(/[^a-zA-Z0-9]/g, '')}`);
+            console.log('Options div:', optionsDiv);
 
             // Hide all other option divs first
             document.querySelectorAll('.save-options').forEach(div => {
@@ -488,7 +493,10 @@ function displayIndividualListContent(listName) {
             });
 
             // Toggle the options div for this word
-            optionsDiv.style.display = optionsDiv.style.display === 'block' ? 'none' : 'block';
+            if (optionsDiv) {
+                optionsDiv.style.display = optionsDiv.style.display === 'block' ? 'none' : 'block';
+                console.log('Toggled to:', optionsDiv.style.display);
+            }
         });
     });
 
