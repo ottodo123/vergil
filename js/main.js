@@ -419,7 +419,10 @@ function showIndividualListPage(listName) {
     individualListPage.style.display = 'block';
     currentListName = listName;
 
-    individualListTitle.textContent = listName;
+    // Update page title - show "All Saved Terms" for Default List
+    const displayName = listName === "Default List" ? "All Saved Terms" : listName;
+    individualListTitle.textContent = displayName;
+
     wordCountInfo.textContent = `${saveLists[listName].length} words in this list`;
     displayIndividualListContent(listName);
 }
@@ -472,14 +475,33 @@ window.addEventListener('popstate', function() {
 function updateSavedListsDirectory() {
     savedListsDirectory.innerHTML = '';
 
-    Object.keys(saveLists).forEach(listName => {
+    // First, create array of list names with Default List renamed and sorted
+    const listNames = Object.keys(saveLists);
+
+    // Separate Default List and other lists
+    const defaultListIndex = listNames.indexOf("Default List");
+    if (defaultListIndex > -1) {
+        listNames.splice(defaultListIndex, 1);
+    }
+
+    // Sort other lists alphabetically
+    listNames.sort();
+
+    // Add "Default List" (displayed as "All Saved Terms") at the beginning
+    if (saveLists["Default List"] !== undefined) {
+        listNames.unshift("Default List");
+    }
+
+    listNames.forEach(listName => {
+        const displayName = listName === "Default List" ? "All Saved Terms" : listName;
+
         const listItem = document.createElement('div');
         listItem.className = 'list-item';
 
         const listInfo = document.createElement('div');
         listInfo.className = 'list-info';
         listInfo.innerHTML = `
-            <div class="list-name">${listName}</div>
+            <div class="list-name">${displayName}</div>
             <div class="list-count">${saveLists[listName].length} words</div>
         `;
 
@@ -498,7 +520,7 @@ function updateSavedListsDirectory() {
             deleteBtn.textContent = 'Delete';
             deleteBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                if (confirm(`Delete list "${listName}"?`)) {
+                if (confirm(`Delete list "${displayName}"?`)) {
                     deleteList(listName);
                 }
             });
