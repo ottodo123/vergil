@@ -1,57 +1,4 @@
-// Add new list button event listener
-    if (addNewListBtn) {
-        addNewListBtn.addEventListener('click', showNewListPopup);
-    }
-
-    // Back to lists button event listener
-    if (backToListsBtn) {
-        backToListsBtn.addEventListener('click', function() {
-            showSavedListsPage();
-            updateURL({ page: 'saved-lists' });
-        });
-    }
-
-    // Individual list page action buttons
-    const flashcardBtn = document.getElementById('flashcard-btn');
-    const copyBtn = document.getElementById('copy-btn');
-    const printBtn = document.getElementById('print-btn');
-
-    if (flashcardBtn) {
-        flashcardBtn.addEventListener('click', function() {
-            if (currentListName) {
-                // Check flashcard container
-                const flashcardContainer = document.getElementById('flashcard-container');
-
-                // If flashcard is already displayed
-                if (flashcardContainer && flashcardContainer.style.display !== 'none') {
-                    exitFlashcardMode(currentListName); // Exit flashcard mode (hide)
-                    // Change button text
-                    this.innerHTML = '<span class="btn-icon">🔄</span> Flashcards';
-                } else {
-                    // If flashcard doesn't exist or is hidden
-                    startFlashcards(currentListName); // Start flashcards
-                    // Change button text
-                    this.innerHTML = '<span class="btn-icon">🔄</span> Back to List';
-                }
-            }
-        });
-    }
-
-    if (copyBtn) {
-        copyBtn.addEventListener('click', function() {
-            if (currentListName) {
-                copyList(currentListName);
-            }
-        });
-    }
-
-    if (printBtn) {
-        printBtn.addEventListener('click', function() {
-            if (currentListName) {
-                printList(currentListName);
-            }
-        });
-    }// Global variables
+// Global variables
 let vocabularyData = []; // Will store all vocabulary data
 let saveLists = {
     "Default List": []
@@ -65,43 +12,51 @@ let currentFlashcardIndex = 0;
 let flashcardMode = false;
 let currentFilter = 'alphabet'; // Default filter: alphabetical
 
-// DOM elements
-const searchInput = document.getElementById('search-input');
-const searchBtn = document.getElementById('search-btn');
-const vocabularyList = document.getElementById('vocabulary-list');
-const savedListsBtn = document.getElementById('saved-lists-btn');
-const mainPage = document.getElementById('main-page');
-const savedListsPage = document.getElementById('saved-lists-page');
-const individualListPage = document.getElementById('individual-list-page');
-const savedListsDirectory = document.getElementById('saved-lists-directory');
-const addNewListBtn = document.getElementById('add-new-list-btn');
-const backToListsBtn = document.getElementById('back-to-lists-btn');
-const individualListTitle = document.getElementById('individual-list-title');
-const individualListContent = document.getElementById('individual-list-content');
-const wordCountInfo = document.getElementById('word-count-info');
-const mainTitle = document.getElementById('main-title');
-const aboutLink = document.getElementById('about-link');
-const aboutPage = document.getElementById('about-page');
-const newListPopup = document.getElementById('new-list-popup');
-const popupListName = document.getElementById('popup-list-name');
-const popupCreateBtn = document.getElementById('popup-create-btn');
-const closePopupBtn = document.querySelector('.close-popup');
-const filterAlphabetBtn = document.getElementById('filter-alphabet');
-const filterRequiredBtn = document.getElementById('filter-required');
-const filterOccurrencesBtn = document.getElementById('filter-occurrences');
-const filterDropdownBtn = document.getElementById('filter-dropdown-btn');
-const filterDropdownContent = document.getElementById('filter-dropdown-content');
-
-// New const
-const glossaryBtn = document.getElementById('glossary-btn');
-const grammarBtn = document.getElementById('grammar-btn');
-const figuresBtn = document.getElementById('figures-btn');
-const aboutBtn = document.getElementById('about-btn');
-const grammarPage = document.getElementById('grammar-page');
-const figuresPage = document.getElementById('figures-page');
+// DOM elements - will be populated after DOMContentLoaded
+let searchInput, searchBtn, vocabularyList, savedListsBtn, mainPage, savedListsPage;
+let individualListPage, savedListsDirectory, addNewListBtn, backToListsBtn;
+let individualListTitle, individualListContent, wordCountInfo, mainTitle;
+let aboutLink, aboutPage, newListPopup, popupListName, popupCreateBtn, closePopupBtn;
+let filterAlphabetBtn, filterRequiredBtn, filterOccurrencesBtn, filterDropdownBtn;
+let filterDropdownContent, glossaryBtn, grammarBtn, figuresBtn, aboutBtn;
+let grammarPage, figuresPage;
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize DOM element references
+    searchInput = document.getElementById('search-input');
+    searchBtn = document.getElementById('search-btn');
+    vocabularyList = document.getElementById('vocabulary-list');
+    savedListsBtn = document.getElementById('saved-lists-btn');
+    mainPage = document.getElementById('main-page');
+    savedListsPage = document.getElementById('saved-lists-page');
+    individualListPage = document.getElementById('individual-list-page');
+    savedListsDirectory = document.getElementById('saved-lists-directory');
+    addNewListBtn = document.getElementById('add-new-list-btn');
+    backToListsBtn = document.getElementById('back-to-lists-btn');
+    individualListTitle = document.getElementById('individual-list-title');
+    individualListContent = document.getElementById('individual-list-content');
+    wordCountInfo = document.getElementById('word-count-info');
+    mainTitle = document.getElementById('main-title');
+    aboutLink = document.getElementById('about-link');
+    aboutPage = document.getElementById('about-page');
+    newListPopup = document.getElementById('new-list-popup');
+    popupListName = document.getElementById('popup-list-name');
+    popupCreateBtn = document.getElementById('popup-create-btn');
+    closePopupBtn = document.querySelector('.close-popup');
+    filterAlphabetBtn = document.getElementById('filter-alphabet');
+    filterRequiredBtn = document.getElementById('filter-required');
+    filterOccurrencesBtn = document.getElementById('filter-occurrences');
+    filterDropdownBtn = document.getElementById('filter-dropdown-btn');
+    filterDropdownContent = document.getElementById('filter-dropdown-content');
+    glossaryBtn = document.getElementById('glossary-btn');
+    grammarBtn = document.getElementById('grammar-btn');
+    figuresBtn = document.getElementById('figures-btn');
+    aboutBtn = document.getElementById('about-btn');
+    grammarPage = document.getElementById('grammar-page');
+    figuresPage = document.getElementById('figures-page');
+
+    // Load CSV data
     loadCSVData();
 
     // Handle the async nature of loadSavedLists
@@ -143,27 +98,118 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check login state
     checkLoginState();
 
-    // Set up Google sign-in button event listener
+    // Set up event listeners
+    setupEventListeners();
+});
+
+// Set up all event listeners
+function setupEventListeners() {
+    // Google sign-in buttons
     const googleSignInBtn = document.getElementById('google-sign-in');
     if (googleSignInBtn) {
         googleSignInBtn.addEventListener('click', handleGoogleSignIn);
     }
 
-    // Set up mobile Google sign-in button event listener
     const googleSignInBtnMobile = document.getElementById('google-sign-in-mobile');
     if (googleSignInBtnMobile) {
         googleSignInBtnMobile.addEventListener('click', handleGoogleSignIn);
     }
 
-    // Set up popup-related event listeners
-    console.log("Setting up popup event listeners"); // Debug log
-    console.log("Popup elements:", {
-        newListPopup,
-        popupListName,
-        popupCreateBtn,
-        closePopupBtn
-    }); // Debug log
+    // Navigation buttons
+    if (glossaryBtn) {
+        glossaryBtn.addEventListener('click', function() {
+            showMainPage();
+            updateURL({ page: null, list: null, q: null });
+        });
+    }
 
+    if (grammarBtn) {
+        grammarBtn.addEventListener('click', function() {
+            showGrammarPage();
+            updateURL({ page: 'grammar' });
+        });
+    }
+
+    if (figuresBtn) {
+        figuresBtn.addEventListener('click', function() {
+            showFiguresPage();
+            updateURL({ page: 'figures' });
+        });
+    }
+
+    if (aboutBtn) {
+        aboutBtn.addEventListener('click', function() {
+            showAboutPage();
+            updateURL({ page: 'about' });
+        });
+    }
+
+    // Main title click
+    if (mainTitle) {
+        mainTitle.addEventListener('click', function() {
+            showMainPage();
+            updateURL({ page: null, list: null, q: null });
+        });
+    }
+
+    // Save lists button
+    if (savedListsBtn) {
+        savedListsBtn.addEventListener('click', function() {
+            showSavedListsPage();
+            updateURL({ page: 'saved-lists' });
+        });
+    }
+
+    // Add new list button
+    if (addNewListBtn) {
+        addNewListBtn.addEventListener('click', showNewListPopup);
+    }
+
+    // Back to lists button
+    if (backToListsBtn) {
+        backToListsBtn.addEventListener('click', function() {
+            showSavedListsPage();
+            updateURL({ page: 'saved-lists' });
+        });
+    }
+
+    // Individual list page action buttons
+    const flashcardBtn = document.getElementById('flashcard-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const printBtn = document.getElementById('print-btn');
+
+    if (flashcardBtn) {
+        flashcardBtn.addEventListener('click', function() {
+            if (currentListName) {
+                const flashcardContainer = document.getElementById('flashcard-container');
+                if (flashcardContainer && flashcardContainer.style.display !== 'none') {
+                    exitFlashcardMode(currentListName);
+                    this.innerHTML = '<span class="btn-icon">🔄</span> Flashcards';
+                } else {
+                    startFlashcards(currentListName);
+                    this.innerHTML = '<span class="btn-icon">🔄</span> Back to List';
+                }
+            }
+        });
+    }
+
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            if (currentListName) {
+                copyList(currentListName);
+            }
+        });
+    }
+
+    if (printBtn) {
+        printBtn.addEventListener('click', function() {
+            if (currentListName) {
+                printList(currentListName);
+            }
+        });
+    }
+
+    // Popup-related event listeners
     if (closePopupBtn) {
         closePopupBtn.addEventListener('click', hideNewListPopup);
     }
@@ -189,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Filter buttons
     if (filterAlphabetBtn) {
         filterAlphabetBtn.addEventListener('click', () => applyFilter('alphabet'));
     }
@@ -197,6 +244,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (filterOccurrencesBtn) {
         filterOccurrencesBtn.addEventListener('click', () => applyFilter('occurrences'));
+    }
+
+    // Filter dropdown
+    if (filterDropdownBtn && filterDropdownContent) {
+        filterDropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            filterDropdownContent.classList.toggle('show');
+        });
+
+        document.querySelectorAll('.filter-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const filterType = this.getAttribute('data-filter');
+                document.querySelectorAll('.filter-option').forEach(opt => {
+                    opt.classList.remove('active');
+                });
+                this.classList.add('active');
+                applyFilter(filterType);
+                filterDropdownContent.classList.remove('show');
+            });
+        });
+
+        document.addEventListener('click', function() {
+            filterDropdownContent.classList.remove('show');
+        });
+
+        // Set initial active state
+        const alphabetOption = document.querySelector('.filter-option[data-filter="alphabet"]');
+        if (alphabetOption) {
+            alphabetOption.classList.add('active');
+        }
     }
 
     // Mobile menu functionality
@@ -210,14 +287,14 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileMenuBtn.addEventListener('click', function() {
             mobileMenu.classList.add('active');
             mobileMenuOverlay.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            document.body.style.overflow = 'hidden';
         });
     }
 
     function closeMobileMenu() {
         mobileMenu.classList.remove('active');
         mobileMenuOverlay.style.display = 'none';
-        document.body.style.overflow = ''; // Restore scrolling
+        document.body.style.overflow = '';
     }
 
     if (mobileMenuClose) {
@@ -232,12 +309,9 @@ document.addEventListener('DOMContentLoaded', () => {
     mobileNavBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const page = this.getAttribute('data-page');
-
-            // Update active state
             mobileNavBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
 
-            // Navigate to page
             switch(page) {
                 case 'glossary':
                     showMainPage();
@@ -257,80 +331,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
 
-            // Close menu
             closeMobileMenu();
         });
     });
-
-    // Filter dropdown functionality
-    if (filterDropdownBtn && filterDropdownContent) {
-        // Toggle dropdown
-        filterDropdownBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            filterDropdownContent.classList.toggle('show');
-        });
-
-        // Handle filter selection
-        document.querySelectorAll('.filter-option').forEach(option => {
-            option.addEventListener('click', function() {
-                const filterType = this.getAttribute('data-filter');
-
-                // Update active state
-                document.querySelectorAll('.filter-option').forEach(opt => {
-                    opt.classList.remove('active');
-                });
-                this.classList.add('active');
-
-                // Apply filter
-                applyFilter(filterType);
-
-                // Close dropdown
-                filterDropdownContent.classList.remove('show');
-            });
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function() {
-            filterDropdownContent.classList.remove('show');
-        });
-
-        // Set initial active state
-        document.querySelector('.filter-option[data-filter="alphabet"]').classList.add('active');
-    }
-});
-
-// Navigation button event listeners
-glossaryBtn.addEventListener('click', function() {
-    showMainPage();
-    updateURL({ page: null, list: null, q: null });
-});
-
-grammarBtn.addEventListener('click', function() {
-    showGrammarPage();
-    updateURL({ page: 'grammar' });
-});
-
-figuresBtn.addEventListener('click', function() {
-    showFiguresPage();
-    updateURL({ page: 'figures' });
-});
-
-aboutBtn.addEventListener('click', function() {
-    showAboutPage();
-    updateURL({ page: 'about' });
-});
-
-// Main title click event
-mainTitle.addEventListener('click', function() {
-    showMainPage();
-    updateURL({ page: null, list: null, q: null });
-});
-
-// Save lists button click event (page transition)
-savedListsBtn.addEventListener('click', function() {
-    showSavedListsPage();
-    updateURL({ page: 'saved-lists' });
-});
+}
 
 // Page display functions
 function showAboutPage() {
@@ -361,12 +365,10 @@ function hideAllPages() {
 }
 
 function updateActiveNavButton(activePage) {
-    // Remove active class from all nav buttons
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
 
-    // Add active class to the appropriate button
     switch(activePage) {
         case 'glossary':
             glossaryBtn.classList.add('active');
@@ -382,7 +384,6 @@ function updateActiveNavButton(activePage) {
             break;
     }
 
-    // Also update mobile nav buttons
     document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.getAttribute('data-page') === activePage ||
@@ -404,7 +405,6 @@ function showSavedListsPage() {
     hideAllPages();
     savedListsPage.style.display = 'block';
     updateSavedListsDirectory();
-    // Don't update nav buttons for saved lists page
 }
 
 // Display individual list page
@@ -419,13 +419,8 @@ function showIndividualListPage(listName) {
     individualListPage.style.display = 'block';
     currentListName = listName;
 
-    // Update page title
     individualListTitle.textContent = listName;
-
-    // Update word count
     wordCountInfo.textContent = `${saveLists[listName].length} words in this list`;
-
-    // Display list content
     displayIndividualListContent(listName);
 }
 
@@ -433,7 +428,6 @@ function showIndividualListPage(listName) {
 function updateURL(params) {
     const url = new URL(window.location);
 
-    // Update each parameter
     for (const [key, value] of Object.entries(params)) {
         if (value === null) {
             url.searchParams.delete(key);
@@ -442,7 +436,6 @@ function updateURL(params) {
         }
     }
 
-    // Change URL (using history API)
     window.history.pushState({}, '', url);
 }
 
@@ -459,6 +452,10 @@ window.addEventListener('popstate', function() {
         showIndividualListPage(list);
     } else if (page === 'about') {
         showAboutPage();
+    } else if (page === 'grammar') {
+        showGrammarPage();
+    } else if (page === 'figures') {
+        showFiguresPage();
     } else {
         showMainPage();
         if (searchQuery) {
@@ -486,7 +483,6 @@ function updateSavedListsDirectory() {
             <div class="list-count">${saveLists[listName].length} words</div>
         `;
 
-        // Make the list info clickable
         listInfo.style.cursor = 'pointer';
         listInfo.addEventListener('click', function() {
             showIndividualListPage(listName);
@@ -526,7 +522,6 @@ function displayIndividualListContent(listName) {
     }
 
     words.forEach(word => {
-        // Check if required word
         const isRequired = word.Required === 1 || word.Required === "1";
 
         const wordItem = document.createElement('div');
@@ -545,7 +540,6 @@ function displayIndividualListContent(listName) {
         individualListContent.appendChild(wordItem);
     });
 
-    // Add event listeners for removing words
     individualListContent.querySelectorAll('.save-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const wordToRemove = this.getAttribute('data-word');
@@ -560,9 +554,7 @@ function removeWordFromList(wordToRemove, listToRemoveFrom) {
     const wordIndex = saveLists[listToRemoveFrom].findIndex(word => word.Headword === wordToRemove);
 
     if (wordIndex !== -1) {
-        // If removing from Default List, remove from all lists
         if (listToRemoveFrom === "Default List") {
-            // Remove word from all lists
             for (const list in saveLists) {
                 const indexInList = saveLists[list].findIndex(word => word.Headword === wordToRemove);
                 if (indexInList !== -1) {
@@ -571,10 +563,8 @@ function removeWordFromList(wordToRemove, listToRemoveFrom) {
             }
             alert(`Word "${wordToRemove}" has been removed from all lists.`);
         } else {
-            // Remove from specific list only
             saveLists[listToRemoveFrom].splice(wordIndex, 1);
 
-            // Check if word exists in other custom lists
             let existsInOtherLists = false;
             for (const list in saveLists) {
                 if (list !== "Default List" && list !== listToRemoveFrom) {
@@ -585,7 +575,6 @@ function removeWordFromList(wordToRemove, listToRemoveFrom) {
                 }
             }
 
-            // If not in other lists, remove from Default list too
             if (!existsInOtherLists) {
                 const defaultIndex = saveLists["Default List"].findIndex(word => word.Headword === wordToRemove);
                 if (defaultIndex !== -1) {
@@ -597,7 +586,6 @@ function removeWordFromList(wordToRemove, listToRemoveFrom) {
         synchronizeDefaultList();
         saveListsToStorage();
 
-        // Update UI
         displayIndividualListContent(listToRemoveFrom);
         wordCountInfo.textContent = `${saveLists[listToRemoveFrom].length} words in this list`;
         displayFilteredVocabularyItems(vocabularyData);
@@ -606,15 +594,11 @@ function removeWordFromList(wordToRemove, listToRemoveFrom) {
 
 // Delete list
 function deleteList(listName) {
-    // Get words from list to delete
     const wordsInListToDelete = saveLists[listName];
 
-    // Check if each word exists in other lists
     wordsInListToDelete.forEach(wordToCheck => {
-        // Check if word exists in other custom lists
         let existsInOtherLists = false;
         for (const otherListName in saveLists) {
-            // Exclude current list to delete and Default List
             if (otherListName !== listName && otherListName !== "Default List") {
                 if (saveLists[otherListName].some(word => word.Headword === wordToCheck.Headword)) {
                     existsInOtherLists = true;
@@ -623,7 +607,6 @@ function deleteList(listName) {
             }
         }
 
-        // If not in other lists, remove from Default List too
         if (!existsInOtherLists) {
             const defaultIndex = saveLists["Default List"].findIndex(word => word.Headword === wordToCheck.Headword);
             if (defaultIndex !== -1) {
@@ -632,15 +615,12 @@ function deleteList(listName) {
         }
     });
 
-    // Delete list
     delete saveLists[listName];
     saveListsToStorage();
 
-    // Update UI
     updateSavedListsDirectory();
     displayFilteredVocabularyItems(vocabularyData);
 
-    // Notify user
     alert(`List "${listName}" has been deleted. Words that were only in this list have also been removed from Default List.`);
 }
 
@@ -650,8 +630,19 @@ window.addEventListener('error', function(e) {
         vocabularyList.innerHTML = `
             <div class="no-results">
                 <p>Could not load vocabulary data. Make sure the CSV file exists.</p>
-                <p>The file should be named: <code>vocabulary_deduplicated.csv</code> and placed in the same directory as this HTML file.</p>
+                <p>The file should be named: <code>vocabulary_deduplicated_3.csv</code> and placed in the same directory as this HTML file.</p>
             </div>
         `;
     }
 });
+
+// Global functions needed by other modules
+window.showNewListPopup = showNewListPopup;
+window.hideNewListPopup = hideNewListPopup;
+window.createListFromPopup = createListFromPopup;
+window.updateSavedListsDirectory = updateSavedListsDirectory;
+window.displayFilteredVocabularyItems = displayFilteredVocabularyItems;
+window.updateURL = updateURL;
+window.showMainPage = showMainPage;
+window.showSavedListsPage = showSavedListsPage;
+window.showIndividualListPage = showIndividualListPage;

@@ -82,35 +82,6 @@ function synchronizeDefaultList() {
     saveListsToStorage();
 }
 
-// Create new save list
-if (typeof createListBtn !== 'undefined' && createListBtn) {
-    createListBtn.addEventListener('click', () => {
-        const newListName = newListNameInput.value.trim();
-
-        if (newListName === '') {
-            alert('Please enter a list name');
-            return;
-        }
-
-        if (saveLists[newListName]) {
-            alert('A list with this name already exists');
-            return;
-        }
-
-        // Create new list
-        saveLists[newListName] = [];
-        saveListsToStorage();
-
-        // Update UI
-        newListNameInput.value = '';
-        updateSavedListsDirectory();
-
-        // Refresh main vocabulary list to update save options
-        displayFilteredVocabularyItems(vocabularyData);
-        synchronizeDefaultList();
-    });
-}
-
 // Show new list popup function
 function showNewListPopup() {
     console.log("showNewListPopup called", newListPopup); // Debug log

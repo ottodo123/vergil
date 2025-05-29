@@ -35,7 +35,6 @@ function initializeFirebase() {
                 updateLoginUI(user.displayName || user.email);
 
                 // Important: Load data from Firebase when logged in
-                // Replace local data with Firebase data in this function
                 loadUserDataFromFirebase(user.uid);
             } else {
                 // Logged out state
@@ -60,7 +59,7 @@ function initializeFirebase() {
 
                 // Update UI
                 displayFilteredVocabularyItems(vocabularyData);
-                if (savedListsPage.style.display !== 'none') {
+                if (savedListsPage && savedListsPage.style.display !== 'none') {
                     updateSavedListsDirectory();
                 }
 

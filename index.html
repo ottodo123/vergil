@@ -17,8 +17,8 @@
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
 <body>
     <header>
@@ -26,7 +26,7 @@
             <div class="header-top">
                 <h1 id="main-title">Vergil Glossary</h1>
                 <div class="header-auth">
-                    <!-- Firebase 로그인 컨테이너 -->
+                    <!-- Firebase login container -->
                     <div class="firebase-auth-container-header">
                         <button id="google-sign-in" class="google-sign-in-btn">
                             <span class="google-icon">G</span> Sign in with Google
@@ -68,8 +68,7 @@
         </div>
     </div>
 
-
-    <!-- 메인 페이지 - 단어 목록 -->
+    <!-- Main page - Word list -->
     <div id="main-page" class="container page">
         <div class="search-container">
             <div class="search-box">
@@ -133,7 +132,7 @@
         </div>
     </div>
 
-    <!-- Grammar Appendix 페이지 -->
+    <!-- Grammar Appendix page -->
     <div id="grammar-page" class="container page" style="display: none;">
         <h2>Grammar Appendix</h2>
         <div class="page-content">
@@ -141,7 +140,7 @@
         </div>
     </div>
 
-    <!-- Figures Index 페이지 -->
+    <!-- Figures Index page -->
     <div id="figures-page" class="container page" style="display: none;">
         <h2>Figures Index</h2>
         <div class="page-content">
@@ -149,7 +148,7 @@
         </div>
     </div>
 
-    <!-- About 페이지 -->
+    <!-- About page -->
     <div id="about-page" class="container page" style="display: none;">
         <h2>About Latin Vocabulary Glossary</h2>
         <div class="about-content">
@@ -172,6 +171,7 @@
         </div>
     </div>
 
+    <!-- New List Popup -->
     <div id="new-list-popup" class="popup">
         <div class="popup-content">
             <span class="close-popup">&times;</span>
@@ -227,7 +227,8 @@
 
     <!-- Import PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <!-- Main script -->
+
+    <!-- Firebase config and main scripts -->
     <script src="config.js"></script>
     <script src="js/main.js"></script>
     <script src="js/auth.js"></script>
