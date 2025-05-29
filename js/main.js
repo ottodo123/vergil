@@ -104,6 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Set up all event listeners
 function setupEventListeners() {
+    // Initialize search functionality from vocabulary.js
+    initializeSearch();
+
     // Google sign-in buttons
     const googleSignInBtn = document.getElementById('google-sign-in');
     if (googleSignInBtn) {

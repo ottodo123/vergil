@@ -44,14 +44,6 @@ async function loadCSVData() {
     }
 }
 
-// Search functionality
-searchBtn.addEventListener('click', performSearch);
-searchInput.addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') {
-        performSearch();
-    }
-});
-
 function performSearch() {
     const searchTerm = searchInput.value.toLowerCase().trim();
 
@@ -124,5 +116,17 @@ function applyFilter(filterType) {
             (item.Headword_Data && item.Headword_Data.toLowerCase().includes(searchTerm))
         );
         displayFilteredVocabularyItems(filteredVocabulary);
+    }
+}
+
+// Initialize search functionality - to be called after DOM is loaded
+function initializeSearch() {
+    if (searchBtn && searchInput) {
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
     }
 }
