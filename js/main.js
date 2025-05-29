@@ -484,10 +484,10 @@ function displayIndividualListContent(listName) {
         individualListContent.appendChild(wordItem);
     });
 
-    // Add event listeners for save buttons to show dropdown
+    // Add event listeners directly without setTimeout
     const saveButtons = individualListContent.querySelectorAll('.save-btn');
 
-    saveButtons.forEach((btn) => {
+    saveButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             const wordId = this.getAttribute('data-word');
@@ -508,7 +508,9 @@ function displayIndividualListContent(listName) {
     });
 
     // Add event listeners for save option buttons
-    individualListContent.querySelectorAll('.save-option-btn').forEach(btn => {
+    const saveOptionButtons = individualListContent.querySelectorAll('.save-option-btn');
+
+    saveOptionButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             const wordToToggle = this.getAttribute('data-word');
@@ -527,15 +529,11 @@ function displayIndividualListContent(listName) {
                 // Add to list
                 saveLists[list].push(wordData);
                 this.innerHTML = `${list === "Default List" ? "All Saved Terms" : list} (★)`;
-
-                // Also update synchronizeDefaultList
                 synchronizeDefaultList();
                 saveListsToStorage();
             } else {
                 // Remove from list
                 removeWordFromList(wordToToggle, list);
-
-                // Update the button text
                 const displayName = list === "Default List" ? "All Saved Terms" : list;
                 this.innerHTML = `${displayName} (☆)`;
 
