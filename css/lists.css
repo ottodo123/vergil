@@ -1,6 +1,9 @@
 /* Saved lists page styles */
-/* Saved lists page styles */
 #saved-lists-page {
+    /* Remove all styling - let container handle width */
+}
+
+.saved-lists-content {
     background-color: white;
     border-radius: 4px;
     padding: 0;
@@ -8,17 +11,12 @@
     margin-top: 1rem;
 }
 
-#saved-lists-page h2 {
+.saved-lists-content h2 {
     padding: 2rem 2rem 1rem 2rem;
 }
 
-#saved-lists-page .add-new-list-btn {
+.saved-lists-content .add-new-list-btn {
     margin: 2rem;
-}
-
-/* Saved lists directory */
-.saved-lists-directory {
-    margin: 0;
 }
 
 .list-item {
