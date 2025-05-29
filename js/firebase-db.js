@@ -18,7 +18,7 @@ async function loadUserDataFromFirebase(userId) {
                 // Update UI
                 displayFilteredVocabularyItems(vocabularyData);
                 if (document.getElementById('saved-lists-page').style.display !== 'none') {
-                    updateSaveListTabs();
+                    updateSavedListsDirectory();
                 }
 
                 // Also backup to local storage

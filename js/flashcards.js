@@ -38,11 +38,9 @@ function startFlashcards(listName) {
     // Only execute below code if flashcard doesn't exist
 
     // Hide current list content
-    const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
-    const wordItemsContainer = listContent.querySelector('.word-items-container');
-
-    if (wordItemsContainer) {
-        wordItemsContainer.style.display = 'none';
+    const listContent = document.getElementById('individual-list-content');
+    if (listContent) {
+        listContent.style.display = 'none';
     }
 
     // Activate flashcard mode
@@ -191,12 +189,10 @@ function startFlashcards(listName) {
     flashcardContainer.appendChild(controlsDiv);
     flashcardContainer.appendChild(flashcardDiv);
 
-    // Add flashcard container in place of list content
-    if (wordItemsContainer) {
-        wordItemsContainer.parentNode.insertBefore(flashcardContainer, wordItemsContainer.nextSibling);
-    } else {
-        // If word container doesn't exist, add directly to list content
-        listContent.appendChild(flashcardContainer);
+    // Add flashcard container to individual list page
+    const individualListPage = document.getElementById('individual-list-page');
+    if (individualListPage && listContent) {
+        listContent.parentNode.insertBefore(flashcardContainer, listContent.nextSibling);
     }
 }
 
@@ -247,11 +243,9 @@ function exitFlashcardMode(listName) {
     }
 
     // Show word list again
-    const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
-    const wordItemsContainer = listContent.querySelector('.word-items-container');
-
-    if (wordItemsContainer) {
-        wordItemsContainer.style.display = 'block';
+    const listContent = document.getElementById('individual-list-content');
+    if (listContent) {
+        listContent.style.display = 'block';
     }
 }
 

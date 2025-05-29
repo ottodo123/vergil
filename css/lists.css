@@ -2,11 +2,118 @@
 #saved-lists-page {
     background-color: white;
     border-radius: 4px;
-    padding: 1rem;
-    padding-bottom: 3rem; /* Bottom padding increase */
+    padding: 2rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     margin-top: 1rem;
-    margin-bottom: 2rem; /* Bottom margin added */
+}
+
+/* Saved lists directory */
+.saved-lists-directory {
+    margin: 2rem 0;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.list-item:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    transform: translateX(5px);
+}
+
+.list-info {
+    flex: 1;
+}
+
+.list-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.list-count {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.list-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.delete-list-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.delete-list-btn:hover {
+    background-color: #c82333;
+}
+
+.delete-list-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* New list button */
+.add-new-list-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 2rem;
+}
+
+.add-new-list-btn:hover {
+    background-color: #333;
+}
+
+/* Individual list page styles */
+#individual-list-page {
+    background-color: white;
+    border-radius: 4px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-top: 1rem;
+}
+
+#individual-list-title {
+    margin: 1rem 0 1.5rem 0;
+    color: #333;
+}
+
+.individual-list-content {
+    margin-top: 1rem;
+}
+
+.individual-list-content .vocabulary-item {
+    background-color: #f8f9fa;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
 }
 
 /* Save list tabs */

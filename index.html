@@ -98,18 +98,39 @@
         </div>
     </div>
 
-    <!-- 저장 리스트 페이지 -->
+    <!-- Saved lists directory page -->
     <div id="saved-lists-page" class="container page" style="display: none;">
-        <h2>Saved Lists</h2>
+        <h2>My Saved Lists</h2>
+        <div class="saved-lists-directory" id="saved-lists-directory">
+            <!-- List directory will be dynamically populated -->
+        </div>
+        <button class="add-new-list-btn" id="add-new-list-btn">
+            <span class="btn-icon">+</span> Create New List
+        </button>
+    </div>
 
-        <div class="save-list-tabs" id="save-list-tabs">
-            <!-- Tabs will be dynamically added here -->
+    <!-- Individual list page -->
+    <div id="individual-list-page" class="container page" style="display: none;">
+        <button class="back-btn" id="back-to-lists-btn">← Back to Lists</button>
+        <h2 id="individual-list-title">List Name</h2>
+
+        <div class="list-action-buttons">
+            <button class="action-btn flashcard-btn" id="flashcard-btn">
+                <span class="btn-icon">🔄</span> Flashcards
+            </button>
+            <button class="action-btn copy-btn" id="copy-btn">
+                <span class="btn-icon">📋</span> Copy List
+            </button>
+            <button class="action-btn print-btn" id="print-btn">
+                <span class="btn-icon">🖨️</span> Print List
+            </button>
         </div>
 
-        <div id="save-list-contents">
-            <!-- List contents will be dynamically added here -->
-        </div>
+        <div class="word-count-info" id="word-count-info">0 words in this list</div>
 
+        <div class="individual-list-content" id="individual-list-content">
+            <!-- Individual list content will be dynamically populated -->
+        </div>
     </div>
 
     <!-- Grammar Appendix 페이지 -->
@@ -207,7 +228,14 @@
     <!-- Import PapaParse for CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <!-- Main script -->
-     <script src="config.js"></script>
-    <<script src="js/script.js"></script>
+    <script src="config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/firebase-db.js"></script>
+    <script src="js/vocabulary.js"></script>
+    <script src="js/lists.js"></script>
+    <script src="js/flashcards.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/mobile.js"></script>
 </body>
 </html>

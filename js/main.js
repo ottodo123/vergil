@@ -1,4 +1,57 @@
-// Global variables
+// Add new list button event listener
+    if (addNewListBtn) {
+        addNewListBtn.addEventListener('click', showNewListPopup);
+    }
+
+    // Back to lists button event listener
+    if (backToListsBtn) {
+        backToListsBtn.addEventListener('click', function() {
+            showSavedListsPage();
+            updateURL({ page: 'saved-lists' });
+        });
+    }
+
+    // Individual list page action buttons
+    const flashcardBtn = document.getElementById('flashcard-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const printBtn = document.getElementById('print-btn');
+
+    if (flashcardBtn) {
+        flashcardBtn.addEventListener('click', function() {
+            if (currentListName) {
+                // Check flashcard container
+                const flashcardContainer = document.getElementById('flashcard-container');
+
+                // If flashcard is already displayed
+                if (flashcardContainer && flashcardContainer.style.display !== 'none') {
+                    exitFlashcardMode(currentListName); // Exit flashcard mode (hide)
+                    // Change button text
+                    this.innerHTML = '<span class="btn-icon">🔄</span> Flashcards';
+                } else {
+                    // If flashcard doesn't exist or is hidden
+                    startFlashcards(currentListName); // Start flashcards
+                    // Change button text
+                    this.innerHTML = '<span class="btn-icon">🔄</span> Back to List';
+                }
+            }
+        });
+    }
+
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            if (currentListName) {
+                copyList(currentListName);
+            }
+        });
+    }
+
+    if (printBtn) {
+        printBtn.addEventListener('click', function() {
+            if (currentListName) {
+                printList(currentListName);
+            }
+        });
+    }// Global variables
 let vocabularyData = []; // Will store all vocabulary data
 let saveLists = {
     "Default List": []
@@ -19,10 +72,13 @@ const vocabularyList = document.getElementById('vocabulary-list');
 const savedListsBtn = document.getElementById('saved-lists-btn');
 const mainPage = document.getElementById('main-page');
 const savedListsPage = document.getElementById('saved-lists-page');
-const saveListTabs = document.getElementById('save-list-tabs');
-const saveListContents = document.getElementById('save-list-contents');
-const newListNameInput = document.getElementById('new-list-name');
-const createListBtn = document.getElementById('create-list-btn');
+const individualListPage = document.getElementById('individual-list-page');
+const savedListsDirectory = document.getElementById('saved-lists-directory');
+const addNewListBtn = document.getElementById('add-new-list-btn');
+const backToListsBtn = document.getElementById('back-to-lists-btn');
+const individualListTitle = document.getElementById('individual-list-title');
+const individualListContent = document.getElementById('individual-list-content');
+const wordCountInfo = document.getElementById('word-count-info');
 const mainTitle = document.getElementById('main-title');
 const aboutLink = document.getElementById('about-link');
 const aboutPage = document.getElementById('about-page');
@@ -61,7 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const list = urlParams.get('list');
 
     if (page === 'saved-lists') {
-        showSavedListsPage(list);
+        showSavedListsPage();
+    } else if (page === 'list' && list) {
+        showIndividualListPage(list);
     } else if (page === 'about') {
         showAboutPage();
     } else if (page === 'grammar') {
@@ -268,11 +326,10 @@ mainTitle.addEventListener('click', function() {
     updateURL({ page: null, list: null, q: null });
 });
 
-// Save lists button click event (page transition, not popup)
+// Save lists button click event (page transition)
 savedListsBtn.addEventListener('click', function() {
     showSavedListsPage();
-    updateSaveListTabs();
-    updateURL({ page: 'saved-lists', list: null });
+    updateURL({ page: 'saved-lists' });
 });
 
 // Page display functions
@@ -297,6 +354,7 @@ function showFiguresPage() {
 function hideAllPages() {
     mainPage.style.display = 'none';
     savedListsPage.style.display = 'none';
+    individualListPage.style.display = 'none';
     aboutPage.style.display = 'none';
     grammarPage.style.display = 'none';
     figuresPage.style.display = 'none';
@@ -342,11 +400,33 @@ function showMainPage() {
 }
 
 // Display saved lists page
-function showSavedListsPage(activeList = null) {
+function showSavedListsPage() {
     hideAllPages();
     savedListsPage.style.display = 'block';
-    updateSaveListTabs(activeList);
+    updateSavedListsDirectory();
     // Don't update nav buttons for saved lists page
+}
+
+// Display individual list page
+function showIndividualListPage(listName) {
+    if (!saveLists[listName]) {
+        alert('List not found');
+        showSavedListsPage();
+        return;
+    }
+
+    hideAllPages();
+    individualListPage.style.display = 'block';
+    currentListName = listName;
+
+    // Update page title
+    individualListTitle.textContent = listName;
+
+    // Update word count
+    wordCountInfo.textContent = `${saveLists[listName].length} words in this list`;
+
+    // Display list content
+    displayIndividualListContent(listName);
 }
 
 // URL update function
@@ -374,7 +454,9 @@ window.addEventListener('popstate', function() {
     const searchQuery = urlParams.get('q');
 
     if (page === 'saved-lists') {
-        showSavedListsPage(list);
+        showSavedListsPage();
+    } else if (page === 'list' && list) {
+        showIndividualListPage(list);
     } else if (page === 'about') {
         showAboutPage();
     } else {
@@ -388,6 +470,179 @@ window.addEventListener('popstate', function() {
         }
     }
 });
+
+// Update saved lists directory
+function updateSavedListsDirectory() {
+    savedListsDirectory.innerHTML = '';
+
+    Object.keys(saveLists).forEach(listName => {
+        const listItem = document.createElement('div');
+        listItem.className = 'list-item';
+
+        const listInfo = document.createElement('div');
+        listInfo.className = 'list-info';
+        listInfo.innerHTML = `
+            <div class="list-name">${listName}</div>
+            <div class="list-count">${saveLists[listName].length} words</div>
+        `;
+
+        // Make the list info clickable
+        listInfo.style.cursor = 'pointer';
+        listInfo.addEventListener('click', function() {
+            showIndividualListPage(listName);
+            updateURL({ page: 'list', list: listName });
+        });
+
+        const listActions = document.createElement('div');
+        listActions.className = 'list-actions';
+
+        if (listName !== "Default List") {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-list-btn';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (confirm(`Delete list "${listName}"?`)) {
+                    deleteList(listName);
+                }
+            });
+            listActions.appendChild(deleteBtn);
+        }
+
+        listItem.appendChild(listInfo);
+        listItem.appendChild(listActions);
+        savedListsDirectory.appendChild(listItem);
+    });
+}
+
+// Display individual list content
+function displayIndividualListContent(listName) {
+    const words = saveLists[listName];
+    individualListContent.innerHTML = '';
+
+    if (words.length === 0) {
+        individualListContent.innerHTML = '<p>No words saved in this list.</p>';
+        return;
+    }
+
+    words.forEach(word => {
+        // Check if required word
+        const isRequired = word.Required === 1 || word.Required === "1";
+
+        const wordItem = document.createElement('div');
+        wordItem.className = 'vocabulary-item';
+        wordItem.innerHTML = `
+            <div class="vocabulary-info ${isRequired ? 'required-word' : ''}">
+                <div class="word">
+                    ${isRequired ? '<span class="required-star"></span>' : ''}
+                    ${word.Headword}
+                </div>
+                <div class="definition">${word.Definitions}</div>
+                <div class="occurrence">Occurrences in the Aeneid: ${word["Occurrences in the Aeneid"]}</div>
+            </div>
+            <button class="save-btn saved" data-word="${word.Headword}" data-list="${listName}">★</button>
+        `;
+        individualListContent.appendChild(wordItem);
+    });
+
+    // Add event listeners for removing words
+    individualListContent.querySelectorAll('.save-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const wordToRemove = this.getAttribute('data-word');
+            const listToRemoveFrom = this.getAttribute('data-list');
+            removeWordFromList(wordToRemove, listToRemoveFrom);
+        });
+    });
+}
+
+// Remove word from list
+function removeWordFromList(wordToRemove, listToRemoveFrom) {
+    const wordIndex = saveLists[listToRemoveFrom].findIndex(word => word.Headword === wordToRemove);
+
+    if (wordIndex !== -1) {
+        // If removing from Default List, remove from all lists
+        if (listToRemoveFrom === "Default List") {
+            // Remove word from all lists
+            for (const list in saveLists) {
+                const indexInList = saveLists[list].findIndex(word => word.Headword === wordToRemove);
+                if (indexInList !== -1) {
+                    saveLists[list].splice(indexInList, 1);
+                }
+            }
+            alert(`Word "${wordToRemove}" has been removed from all lists.`);
+        } else {
+            // Remove from specific list only
+            saveLists[listToRemoveFrom].splice(wordIndex, 1);
+
+            // Check if word exists in other custom lists
+            let existsInOtherLists = false;
+            for (const list in saveLists) {
+                if (list !== "Default List" && list !== listToRemoveFrom) {
+                    if (saveLists[list].some(word => word.Headword === wordToRemove)) {
+                        existsInOtherLists = true;
+                        break;
+                    }
+                }
+            }
+
+            // If not in other lists, remove from Default list too
+            if (!existsInOtherLists) {
+                const defaultIndex = saveLists["Default List"].findIndex(word => word.Headword === wordToRemove);
+                if (defaultIndex !== -1) {
+                    saveLists["Default List"].splice(defaultIndex, 1);
+                }
+            }
+        }
+
+        synchronizeDefaultList();
+        saveListsToStorage();
+
+        // Update UI
+        displayIndividualListContent(listToRemoveFrom);
+        wordCountInfo.textContent = `${saveLists[listToRemoveFrom].length} words in this list`;
+        displayFilteredVocabularyItems(vocabularyData);
+    }
+}
+
+// Delete list
+function deleteList(listName) {
+    // Get words from list to delete
+    const wordsInListToDelete = saveLists[listName];
+
+    // Check if each word exists in other lists
+    wordsInListToDelete.forEach(wordToCheck => {
+        // Check if word exists in other custom lists
+        let existsInOtherLists = false;
+        for (const otherListName in saveLists) {
+            // Exclude current list to delete and Default List
+            if (otherListName !== listName && otherListName !== "Default List") {
+                if (saveLists[otherListName].some(word => word.Headword === wordToCheck.Headword)) {
+                    existsInOtherLists = true;
+                    break;
+                }
+            }
+        }
+
+        // If not in other lists, remove from Default List too
+        if (!existsInOtherLists) {
+            const defaultIndex = saveLists["Default List"].findIndex(word => word.Headword === wordToCheck.Headword);
+            if (defaultIndex !== -1) {
+                saveLists["Default List"].splice(defaultIndex, 1);
+            }
+        }
+    });
+
+    // Delete list
+    delete saveLists[listName];
+    saveListsToStorage();
+
+    // Update UI
+    updateSavedListsDirectory();
+    displayFilteredVocabularyItems(vocabularyData);
+
+    // Notify user
+    alert(`List "${listName}" has been deleted. Words that were only in this list have also been removed from Default List.`);
+}
 
 // Error handling for missing CSV file
 window.addEventListener('error', function(e) {

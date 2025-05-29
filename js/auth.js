@@ -60,8 +60,8 @@ function initializeFirebase() {
 
                 // Update UI
                 displayFilteredVocabularyItems(vocabularyData);
-                if (document.getElementById('saved-lists-page').style.display !== 'none') {
-                    updateSaveListTabs();
+                if (savedListsPage.style.display !== 'none') {
+                    updateSavedListsDirectory();
                 }
 
                 // Show login button in header

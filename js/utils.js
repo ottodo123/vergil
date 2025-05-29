@@ -20,8 +20,7 @@ function copyList(listName) {
     navigator.clipboard.writeText(copyText)
         .then(() => {
             // Show success message
-            const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
-            const copyBtn = listContent.querySelector('.copy-btn');
+            const copyBtn = document.getElementById('copy-btn');
 
             // Change button text temporarily
             const originalText = copyBtn.innerHTML;
@@ -48,8 +47,7 @@ function printList(listName) {
     }
 
     // Show loading indicator
-    const listContent = document.getElementById(`save-list-content-${listName.replace(/\s+/g, '-')}`);
-    const printBtn = listContent.querySelector('.print-btn');
+    const printBtn = document.getElementById('print-btn');
     const originalText = printBtn.innerHTML;
     printBtn.innerHTML = '<span class="btn-icon">⏳</span> Preparing PDF...';
 
