@@ -56,6 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
     grammarPage = document.getElementById('grammar-page');
     figuresPage = document.getElementById('figures-page');
 
+    // Make DOM elements globally accessible for other modules
+    window.vocabularyList = vocabularyList;
+    window.searchInput = searchInput;
+    window.searchBtn = searchBtn;
+
     // Load CSV data
     loadCSVData();
 
