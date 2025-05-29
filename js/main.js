@@ -759,7 +759,6 @@ window.showNewListPopup = showNewListPopup;
 window.hideNewListPopup = hideNewListPopup;
 window.createListFromPopup = createListFromPopup;
 window.updateSavedListsDirectory = updateSavedListsDirectory;
-window.displayFilteredVocabularyItems = displayFilteredVocabularyItems;
 window.updateURL = updateURL;
 window.showMainPage = showMainPage;
 window.showSavedListsPage = showSavedListsPage;
