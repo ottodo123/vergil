@@ -7,6 +7,22 @@
     margin-top: 1rem;
 }
 
+/* Padding for inner content */
+#saved-lists-page h2,
+#saved-lists-page .saved-lists-directory,
+#saved-lists-page .add-new-list-btn {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+#saved-lists-page h2 {
+    padding-top: 2rem;
+}
+
+#saved-lists-page .add-new-list-btn {
+    margin-bottom: 2rem;
+}
+
 /* Saved lists directory */
 .saved-lists-directory {
     margin: 2rem 0;
